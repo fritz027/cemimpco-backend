@@ -7,7 +7,7 @@ import { corsHandler } from './middlewares/corsHandler';
 import { loggingHandler } from './middlewares/loggingHandler';
 import { routeNotFound } from './middlewares/routeNotFound';
 import { errorHandler } from './middlewares/errorHandlers';
-import sampleRoutes from './routes/sampleRoutes';
+import authRoutes from './modules/auth/auth.routes';
 import { API_REQUEST_COUNT_LIMIT, API_TIME_LIMIT } from './config/config';
 
 const app = express();
@@ -38,7 +38,9 @@ logging.log('----------------------------------------');
 app.get('/api/v1/healthcheck', (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({ Status: 'I am  alive!' });
 });
-app.use('/api/v1/sample', sampleRoutes)
+// app.use('/api/v1/sample', sampleRoutes)
+
+app.use('/api/v1/auth', authRoutes);
 
 logging.log('----------------------------------------');
 logging.log('Define Routing Errors');
