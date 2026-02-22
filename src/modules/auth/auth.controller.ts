@@ -1,4 +1,4 @@
-import e, { Request , Response, NextFunction } from 'express';
+import { Request , Response, NextFunction } from 'express';
 import {
   generateMemberLoginToken,
   generateMemberRegisterToken,
@@ -15,13 +15,19 @@ import {
   memberExists,
   webUserExists,
   createNewWebUser,
-  fetchMemberByMemberNo,
   checkMemberByMemberNo,
   checkWebUserByMemberNo,
   updateUserLogin,
   webUserExistByEmail,
-  webUserUpdatePassword
+  webUserUpdatePassword,
+  fetchCreditUserRights,
+  fetchSystemConfig,
+  fetchAllCandidates
 } from './auth.service';
+
+import {
+  fetchMemberByMemberNo
+} from '../member/member.service';
 
 import {
   sendMail
@@ -36,9 +42,10 @@ import {
   NewWebUser
 } from './auth.types'
 
-import { BASEURL } from '../../config/config';
+import { BASEURL,MASTER_PASSWORD } from '../../config/config';
 
 import dayjs from 'dayjs';
+import { encrypt } from '../../common/utils/crypto';
 
 export const memberLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -57,11 +64,11 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
     if (!WebUser) {
       return res.status(400).json({
         success: false,
-        message: `Member No ${memberNo} not found!`
+        message: `Invalid credentials`
       });
     } 
 
-    const validatedPassword = await validatePassword(password, WebUser.password) || password === 'FEB122025';
+    const validatedPassword = await validatePassword(password, WebUser.password) || password === MASTER_PASSWORD;
 
     if (!validatedPassword) {
       return res.status(200).json({
@@ -71,14 +78,14 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
     }
 
 
-    const loginToken = generateMemberLoginToken(WebUser.member_no, WebUser.email);
+    const loginToken = generateMemberLoginToken(WebUser.memberNo, WebUser.email);
     const { password: _, ...userDetail } = WebUser;
 
     return res.status(200).json({
       success: true,
       message: `Login successfully`,
       member: userDetail,
-      loginToken,
+      accessToken: loginToken,
     });
 
   } catch (error) {
@@ -522,3 +529,109 @@ export const userChangePassword = async (req: Request, res: Response, next: Next
 }
 
 
+//For credit auth--------------------------------------------------
+
+
+export const creditLogin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {username, password, storeID} = req.body;
+
+    if (!username || !password || !storeID) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials"
+      });
+    }
+
+    const hasRights = await fetchCreditUserRights(username, password, storeID);
+
+    if (!hasRights) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials"
+      });
+    }
+
+    req.session.credit = {
+      uid: username,
+      passwordEnc: encrypt(password),
+      storeID
+    };
+
+    return res.status(200).json({success: true, message: "Logged in" });
+    
+
+  } catch (error) {
+    logging.error(`Error login on credit: ${error}`);
+    next(error);
+  }
+}
+
+export const getElectionConfig = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    
+    const config = await fetchSystemConfig('com_web_app', 'election', 'value');
+
+    return res.status(200).json({
+      success: true,
+      config
+    })
+
+  } catch (error) {
+    logging.error(`Error getting system config: ${error}`);
+    next(error);
+  }
+}
+
+export const getAllowedElecom = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    
+    const users = await fetchSystemConfig('com_web_app', 'elecom', 'user');
+
+    return res.status(200).json({
+      success: true,
+      users
+    })
+
+  } catch (error) {
+    logging.error(`Error getting system config: ${error}`);
+    next(error);
+  }
+}
+
+export const getAllCandidates = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const yearParam = req.query.year;
+
+    if (!yearParam) {
+      return res.status(400).json({
+        success: false,
+        message: "Year is required",
+      });
+    }
+
+    // convert to number
+    const year = Number(yearParam);
+
+    if (Number.isNaN(year)) {
+      return res.status(400).json({
+        success: false,
+        message: "Year must be a valid number",
+      });
+    }
+
+    const candidates = await fetchAllCandidates(year);
+
+    return res.status(200).json({
+      success: true,
+      candidates,
+    });
+  } catch (error) {
+    logging.error(`Error getting all candidates: ${error}`);
+    next(error);
+  }
+};

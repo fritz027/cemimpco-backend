@@ -1,0 +1,394 @@
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+    }
+
+    table tr td {
+        font-size: 12px;
+    }
+
+    .fl {
+        float: left
+    }
+
+    .fr {
+        float: right;
+        font-size: 12px;
+
+    }
+
+    .title {
+        text-align: center;
+        margin-bottom: 5px;
+        margin-top: 30px;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .promisory-title {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 16px;
+        font-weight: 800;
+        text-decoration: underline;
+    }
+
+    .column {
+        float: left;
+        padding: 10px;
+    }
+
+
+    .left,
+    .right {
+        width: 20%;
+    }
+
+    .middle {
+        width: 60%;
+    }
+
+    .row::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .bold {
+        font-weight: 800;
+        font-size: 12px;
+    }
+
+    .cols1 {
+        width: 10%;
+    }
+
+    .cols2 {
+        width: 20%;
+    }
+
+    .cols2-1 {
+        width: 25%;
+    }
+
+    .cols3 {
+        width: 30%
+    }
+
+    .cols4 {
+        width: 40%;
+    }
+
+    .cols4-1 {
+        width: 35%;
+    }
+
+    .cols5 {
+        width: 50%;
+    }
+
+    .cols6 {
+        width: 60%;
+    }
+
+    .ml-1 {
+        margin-left: 10px;
+    }
+
+    .mt-1 {
+        margin-top: 10px;
+    }
+
+    .ml-2 {
+        margin-left: 20px;
+    }
+
+    .mr-2 {
+        margin-right: 20px;
+    }
+
+    .mt-2 {
+        margin-top: 20px;
+    }
+
+    .mb-2 {
+        margin-bottom: 20px;
+    }
+
+    .ml-3 {
+        margin-left: 30px;
+    }
+
+    .mr-1 {
+        margin-right: 10px;
+    }
+
+    .mr-3 {
+        margin-right: 30px;
+    }
+
+    .mt-3 {
+        margin-top: 30px;
+    }
+
+    .mb-3 {
+        margin-bottom: 30px;
+    }
+
+    .ml-4 {
+        margin-left: 40px;
+    }
+
+    .mr-4 {
+        margin-right: 40px;
+    }
+
+    .mt-4 {
+        margin-top: 40px;
+    }
+
+    .mb-4 {
+        margin-bottom: 40px;
+    }
+
+    .ml-5 {
+        margin-left: 50px;
+    }
+
+    .mr-5 {
+        margin-right: 50px;
+    }
+
+    .mt-5 {
+        margin-top: 50px;
+    }
+
+    .mb-5 {
+        margin-bottom: 50px;
+    }
+
+    .text-right {
+        text-align: right;
+        font-size: 12px;
+    }
+
+    .notes {
+        font-size: 10px;
+    }
+    .text-middle {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .withu{
+       text-decoration: underline;
+    }
+    .tor{
+        float: right;
+        margin-right: 10px;
+    }
+    .w70 {
+        width: 70%;
+    }
+    .w30 {
+        width: 30%;
+    }
+    .w60 {
+        width: 60%;
+    }
+    .w40{
+        width: 40;
+    }
+    table tr td {
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .over {
+        padding: 0;
+    }
+    .tabledep {
+        margin-right: 30px;
+    }
+</style>
+<html>
+
+<body>
+    <div class="row">
+        <div class="text-middle">
+            <h3 class="title">LEAR EMPLOYEES MULTI-PURPOSE COOPERATIVE</strong></h1>
+            <span>Sea Breeze, Pusok, Lapu-Lapu City</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column cols5">
+            <span class="bold">NAME: {{ mbr_name }}</span>
+        </div>
+        <div class="column cols3">
+            <span class="bold">MEMBER NO.: {{ member_no }}</span>
+        </div>
+        <div class="column cols2">
+          
+        </div>
+    </div>
+    <div class="bold ml-1 mt-1 text-middle"><strong>CERTIFICATE OF {{ for_year }} DIVIDEND AND PATRONAGE REFUND</strong></div>
+    
+    <div class="row">
+        <div class="column cols5">
+            <p>This is to certify that {{ mbr_name }} has the following share in 2021 Dividend and Patronage Refund Declaration:</p>
+            <div class="mt-1">
+                <table style="width: 100%;">
+                    <tr class="bold text-right">
+                        <td></td>
+                        <td class="withu">Ave Fixed Deposit:</td>
+                        <td class="withu">Dividend Rate:</td>
+                        <td class="withu">Dividend</td>
+                    </tr>
+                    <tr class=" text-right">
+                        <td></td>
+                        <td>{{numberFormat aveDep }}  <strong>X</strong></td>
+                        <td>{{numberFormat div_rate }} <strong>%</strong></td>
+                        <td>{{numberFormat dividend }}</td>
+                    </tr>
+                    <tr class="bold text-right">
+                        <td></td>
+                        <td class="withu">Interest Paid:</td>
+                        <td class="withu">Patronage Rate:</td>
+                        <td class="withu">Patronage</td>
+                    </tr>
+                    <tr class=" text-right">
+                        <td></td>
+                        <td>{{numberFormat int_paid }} <strong>X</strong></td>
+                        <td> {{numberFormat pat_rate }} <strong>%</strong></td>
+                        <td>{{numberFormat patng_refnd }}</td>
+                    </tr>
+                    <tr class="bold text-right">
+                        <td></td>
+                        <td class="withu">Interest paid:</td>
+                        <td class="withu">Reward Rate:</td>
+                        <td class="withu">Reward</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td><strong>REWARD:</strong></td>
+                        <td>{{numberFormat int_paid }} <strong>X</strong></td>
+                        <td>{{numberFormat pat_reward }} <strong>%</strong></td>
+                        <td>{{numberFormat reward }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="text-right mt-2">
+                <span>
+                    Total Dividend + Patronage + Reward <strong class="ml-3 bold">{{numberFormat totreward }}</strong>
+                </span>
+            </div>
+            <div class="mt-3">
+                <span>
+                    Note: Deposited to your Savings Account @ LEMCO
+                </span>
+            </div>
+            <div class="mt-5">
+                <div class="row">
+                    <div class="column cols5 text-middle">
+                        <img src={{ chairsig }} width="200px">
+                        <span></span>
+                        <span>____________________________</span>
+                        <span>Board Chairman</span>
+                    </div>
+                    <div class="column cols5 text-middle">
+                        <img src={{ treasurersig }} width="85px">
+                        <br>
+                        <span></span>
+                        <span>____________________________</span>
+                        <span>Board Treasurer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+        <div class="column cols3">
+            <div class="tor">
+                <span class="withu">{{ test  }}Month-end Fixed Deposit Balance</span>
+            </div>
+            <div class="mt-2 mr-3">
+                <table style="width: 100%;" class="tabledep">
+                    <tr class="text-right">
+                        <td class="w60">Jan</td>
+                        <td class="w40">{{numberFormat jan }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Feb</td>
+                        <td class="w40">{{numberFormat feb }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Mar</td>
+                        <td class="w40">{{numberFormat mar }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Apr</td>
+                        <td class="w40">{{numberFormat apr }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">May</td>
+                        <td class="w40">{{numberFormat may }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Jun</td>
+                        <td class="w40">{{numberFormat jun }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Jul</td>
+                        <td class="w40">{{numberFormat jul }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Aug</td>
+                        <td class="w40">{{numberFormat aug }}</td>
+                    </tr>
+                     <tr class="text-right">
+                        <td class="w60">Sep</td>
+                        <td class="w40">{{numberFormat sep }}</td>
+                    </tr>   
+                     <tr class="text-right">
+                        <td class="w60">Oct</td>
+                        <td class="w40">{{numberFormat oct }}</td>
+                    </tr>   
+                    <tr class="text-right">
+                        <td class="w60">Nov</td>
+                        <td class="w40">{{numberFormat nov }}</td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="w60">Dec</td>
+                        <td class="w40">{{numberFormat dec }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-right over">
+                            ___________________________________
+                        </td>
+                    </tr>
+                    <tr class="text-right">
+                        <td class="over">
+                            Total Month-end Balance:   
+                        </td>
+                        <td class="over">
+                            {{numberFormat totaldep }}
+                        </td>
+                    </tr>
+                    <tr class="text-right">
+                        <td>
+                            Ave. Fixed (12 months):    
+                        </td>
+                        <td>
+                            {{numberFormat aveDep }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+         <div class="column cols2"></div> 
+    </div>
+   
+</body>
+
+</html>

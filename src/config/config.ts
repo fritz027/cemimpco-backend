@@ -12,6 +12,11 @@ export const API_TIME_LIMIT: number = 10 * 60 * 1000; // 10 mins
 export const API_REQUEST_COUNT_LIMIT: number = 100;
 //DATABASE CONNECTION
 export const DATABASE_CONNECTION_STRING: string  = process.env.DB_CONNECTION_MAIN || 'MyDatabaseConnection';
+export const DB_DRIVER: string = process.env.DB_DRIVER || 'database Driver';
+export const DB_DBN: string = process.env.DB_DBN || 'database name';
+export const DB_UID: string = process.env.DB_UID || 'database user id';
+export const DB_PWD: string = process.env.DB_PWD || 'database user password';
+export const DB_SERVER_NAME: string = process.env.DB_SERVER_NAME || 'database Server name';
 export const DATABASE_MAXIMUM_TIMEOUT: number = process.env.DB_MAXIMUM_TIMEOUT ? Number(process.env.DB_MAXIMUM_TIMEOUT) : 10;
 export const DATABASE_LOGIN_TIMEOUT: number = process.env.DATABASE_LOGIN_TIMEOUT ? Number(process.env.DB_LOGIN_TIMEOUT) : 5;
 
@@ -40,5 +45,17 @@ export const MASTER_PASSWORD: string = process.env.MASTER_PASSWORD || 'PC911';
 export const LOAN_APP_UC: string = process.env.LOAN_APPLICATION_UNDERCONSTRUCTION || 'true';
 export const LOAN_APP_USERS: string = process.env.LOAN_APPLICATION_USERS || '{}';
 export const LOAN_APP_PASSWORD: string = process.env.LOAN_APPLICATION_PASSWORD || 'LOANPC911';
-export const VIEW_DIVIDEND: string = process.env.VIEW_DIVIDEND_ENABLED || 'false';
+export const VIEW_DIVIDEND: number = Number(process.env.VIEW_DIVIDEND_ENABLED) || 0;
 export const BASEURL: string = process.env.BASEURL || 'http://localhost:8000';
+
+
+
+//CREDIT SETTINGS
+export const CREDIT_KEY : string = process.env.CREDIT_SECRET_KEY || 'SECRET CREDIT KEY';
+export const CREDIT_SESSION_SECRET : string = process.env.CREDIT_SESSION_SECRET || 'Session Secret Key';
+export const SEMAPHORE_KEY: string = process.env.SEMAPHORE_AUTH_KEY || 'SEMAPHORE TOKEN KEY';
+export const SENDER_NAME: string = process.env.SEMAPHORE_SENDER_NAME || "COOPERATIVE";
+
+//ELECTION SETTING
+export const APP_NAME: string = process.env.APP_NAME || "app name";
+export const SECTION_NAME: string = process.env.SECTION_NAME || "section name";

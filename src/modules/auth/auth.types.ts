@@ -17,11 +17,11 @@ export interface Member {
 }
 
 export interface WebUser {
-  member_no: string;
+  memberNo: string;
   password: string;
   email: string;
   name: string;
-  verified: string;
+  verified: boolean;
   token: string;
   remember_token: string
 }
@@ -33,4 +33,27 @@ export interface NewWebUser {
   password: string;
   token: string;
   date_created: string | Date;
+}
+
+export interface CreditRights {
+  username: string;
+  rights: string;
+}
+
+export interface ElectionSetting {
+  year: number;
+  from: string;
+  to: string;
+  start: boolean;
+}
+
+export interface SystemConfigRow { uvalue: string};
+
+export interface CandidatesResult {
+  member_name: string;
+  membership_date: Date | string;
+  vision: string;
+  photo_url: string;
+  position_desc: string;
+  position_id: string;
 }

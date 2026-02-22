@@ -1,14 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express'
+
+
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:8080']
 
 export function corsHandler(req: Request, res: Response, next: NextFunction) {
-    res.header('Access-Control-Allow-Origin', req.header('origin'));
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
+  const origin = req.header('origin')
 
-    if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-        res.status(200).json({});
-    }
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin)
+  }
 
-    next();
+  res.header("Vary", "Origin"); // ✅ important
+  res.header("Access-Control-Allow-Credentials", "true"); // ✅ for sessions
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  )
+  res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET, OPTIONS')
+
+  if (req.method === 'OPTIONS') {
+    // ✅ echo headers back on preflight
+    res.sendStatus(200);
+    return;
+  }
+
+  next()
 }

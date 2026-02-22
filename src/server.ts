@@ -1,5 +1,6 @@
 import http from 'http'
 import app from './app';
+import "./types/express";
 import { SERVER_HOSTNAME, SERVER_PORT } from './config/config';
 // import logging from './config/logging';
 
