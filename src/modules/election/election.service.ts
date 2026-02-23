@@ -1,6 +1,8 @@
 import { QueryStatement } from "../../database/query";
 import { ElectionSetting, Position,Candidate, CandidatesResult,CandidatePhotoRow } from "./election.type";
 import { APP_NAME, SECTION_NAME } from "../../config/config";
+import { withCoopTransaction } from '../../database/withTx';
+import { queryOnConn } from "../../database/queryOnConn";
 
 
 
@@ -261,5 +263,142 @@ export async function getCandidateByIdAndYear(
   } catch (error) {
     logging.error(`Error getting candidate by id and year: ${id}, ${year} - ${error}`);
     throw error;
+  }
+}
+
+export async function submitVote(payload: {
+  year: number;
+  member_no: string;
+  votes: { position_id: string; candidate_ids: string[] }[];
+}) {
+  try {
+    const year = Number(payload.year);
+    const memberNo = String(payload.member_no || "").trim();
+
+    if (!year || !memberNo) throw new Error("Invalid payload");
+
+    // flatten unique candidate ids
+    const allCandidateIds = Array.from(
+      new Set(payload.votes.flatMap(v => (v.candidate_ids || []).map(String)).filter(Boolean))
+    );
+    if (allCandidateIds.length === 0) throw new Error("No selections");
+
+    return await withCoopTransaction(async (conn) => {
+      // A) prevent double voting (unique index in evs_ballots is also protection)
+     const already = await queryOnConn(
+        conn,
+        `SELECT TOP 1 1
+        FROM DBA.evs_ballots
+        WHERE elect_year = ? AND member_no = ?`,
+        [year, memberNo]
+      );
+      if (already.length) throw new Error("Already voted");
+
+      // B) validate limits from evs_position (position = limit)
+      const posRows = await queryOnConn<{ position_id: string; vote_limit: number }>(
+        conn,
+        `SELECT position_id, position AS vote_limit
+         FROM DBA.evs_position`
+      );
+
+      const limitMap = new Map<string, number>();
+      for (const r of posRows) {
+        limitMap.set(String(r.position_id).trim().toUpperCase(), Number(r.vote_limit));
+      }
+
+      for (const v of payload.votes) {
+        const pid = String(v.position_id).trim().toUpperCase();
+        const limit = limitMap.get(pid);
+        if (!limit) throw new Error(`Unknown position_id: ${pid}`);
+        if ((v.candidate_ids || []).length > limit) {
+          throw new Error(`Too many selections for ${pid}. Max is ${limit}.`);
+        }
+      }
+
+      // C) validate candidates exist and match year+position
+      const placeholders = allCandidateIds.map(() => "?").join(",");
+      const candRows = await queryOnConn<{ candidate_id: string; position_id: string }>(
+        conn,
+        `SELECT candidate_id, position_id
+         FROM DBA.evs_candidates
+         WHERE elect_year = ?
+           AND candidate_id IN (${placeholders})`,
+        [year, ...allCandidateIds]
+      );
+
+      const candPos = new Map<string, string>();
+      for (const r of candRows) {
+        candPos.set(String(r.candidate_id).trim(), String(r.position_id).trim().toUpperCase());
+      }
+
+      for (const v of payload.votes) {
+        const pid = String(v.position_id).trim().toUpperCase();
+        for (const cid of v.candidate_ids || []) {
+          const actual = candPos.get(String(cid).trim());
+          if (!actual) throw new Error(`Invalid candidate_id: ${cid}`);
+          if (actual !== pid) throw new Error(`Candidate ${cid} not in ${pid}`);
+        }
+      }
+
+      // D) generate ballot_no = YYYY + 6-digit seq (safe)
+      // lock counter row (if exists)
+      const counter = await queryOnConn<{ last_seq: number }>(
+        conn,
+        `SELECT last_seq
+         FROM DBA.evs_ballot_counter
+         WHERE elect_year = ?
+         FOR UPDATE`,
+        [year]
+      );
+
+      let nextSeq = 1;
+
+      if (counter.length === 0) {
+        // first ballot this year
+        await queryOnConn(
+          conn,
+          `INSERT INTO DBA.evs_ballot_counter (elect_year, last_seq)
+           VALUES (?, 1)`,
+          [year]
+        );
+        nextSeq = 1;
+      } else {
+        nextSeq = Number(counter[0].last_seq) + 1;
+
+        await queryOnConn(
+          conn,
+          `UPDATE DBA.evs_ballot_counter
+           SET last_seq = ?
+           WHERE elect_year = ?`,
+          [nextSeq, year]
+        );
+      }
+
+      // build formatted ballot number: 2026 + 000001
+      const ballotNo = Number(`${year}${String(nextSeq).padStart(6, "0")}`);
+
+      // E) insert ballot header
+      await queryOnConn(
+        conn,
+        `INSERT INTO DBA.evs_ballots (ballot_no, elect_year, member_no)
+         VALUES (?, ?, ?)`,
+        [ballotNo, year, memberNo]
+      );
+
+      // F) insert vote lines
+      for (const cid of allCandidateIds) {
+        await queryOnConn(
+          conn,
+          `INSERT INTO DBA.evs_votes (ballot_no, elect_year, member_no, candidate_id, vote_date)
+           VALUES (?, ?, ?, ?, CURRENT TIMESTAMP)`,
+          [ballotNo, year, memberNo, cid]
+        );
+      }
+
+      return { ballot_no: ballotNo, total_votes: allCandidateIds.length };
+    });
+  } catch (err) {
+    logging.error(`submitVote error: ${err}`);
+    throw err;
   }
 }

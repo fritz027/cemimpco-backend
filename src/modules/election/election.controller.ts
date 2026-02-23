@@ -12,6 +12,7 @@ import {
   updateCandidate,
   deleteCandidate,
   getCandidateByIdAndYear,
+  submitVote,
 
 
 } from './election.service';
@@ -20,6 +21,7 @@ import { getMemberByMemberNo } from '../credit/credit.controller';
 import { fetchMemberByMemberNo } from '../member/member.service';
 import fs from "node:fs";
 import path from "node:path";
+import { error } from 'node:console';
 
 
 
@@ -782,4 +784,35 @@ export const removeElecomUser = async (req: Request, res: Response) => {
   );
 
   res.json({ success: true });
+};
+
+
+export const castVote = async (req: Request, res: Response, next:NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    const year = Number(req.body?.year);
+    if (!year) return res.status(400).json({ success:false, message:"Invalid year" });
+    if (!memberNo) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const result = await submitVote({
+      year: year,
+      member_no: memberNo,
+      votes: req.body.votes,
+    });
+
+    return res.json({ success: true, ...result });
+  } catch (e: any) {
+    const msg = e?.message || "Error submitting vote";
+
+    const statusCode = msg.toLowerCase().includes("already voted") ? 409 : 400;
+
+    e.statusCode = statusCode;  // attach for error handler
+    logging.error(`Error casting votes: ${msg} - ${statusCode}`);
+    return next(e);
+  }
 };
