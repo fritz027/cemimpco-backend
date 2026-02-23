@@ -12,7 +12,7 @@
   "main": "src/server.ts",
   "scripts": {
     "test": "jest --config jest.config.ts --coverage ",
-    "build": "rm -rf build/ && tsc -p tsconfig.build.json",
+    "build": "rimraf build && tsc -p tsconfig.build.json",
     "dev": "nodemon --watch src --ext ts --exec \"ts-node --project tsconfig.json -r tsconfig-paths/register src/server.ts\""
   },
   "dependencies": {
@@ -48,6 +48,7 @@
     "@types/supertest": "^6.0.3",
     "jest": "^30.0.2",
     "node-mocks-http": "^1.17.2",
+    "rimraf": "^6.1.3",
     "supertest": "^7.1.1",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",

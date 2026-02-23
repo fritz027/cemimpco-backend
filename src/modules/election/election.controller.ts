@@ -1,5 +1,5 @@
 import { Request , Response, NextFunction, response } from 'express';
-import { APP_NAME,BASEURL,SECTION_NAME, SERVER_HOSTNAME, SERVER_PORT } from '../../config/config';
+import { APP_NAME,BASEURL,SECTION_NAME, SERVER_HOSTNAME, SERVER_PORT,SERVERURL } from '../../config/config';
 import { 
   updateElecomList, 
   updateElectionSetting, 
@@ -497,7 +497,7 @@ export const createCandidate = async (req: Request, res: Response, next: NextFun
 
     // ✅ multer puts the uploaded file here
     const photoUrl = req.file
-      ? `http://${SERVER_HOSTNAME}:${SERVER_PORT}/uploads/candidates/${req.file.filename}`
+      ? `${SERVERURL}/uploads/candidates/${req.file.filename}`
       : null;
 
       logging.warn(photoUrl)
@@ -591,7 +591,7 @@ export const patchCandidate = async (req: Request, res: Response, next: NextFunc
 
     // ✅ If new file uploaded, build new URL. Otherwise keep old.
     const newPhotoUrl = req.file
-      ? `http://${SERVER_HOSTNAME}:${SERVER_PORT}/uploads/candidates/${req.file.filename}`
+      ? `${SERVERURL}/uploads/candidates/${req.file.filename}`
       : (existing.photo_url ?? null);
 
     // ✅ If uploaded a new file and old exists => delete old file

@@ -47,7 +47,7 @@ export const LOAN_APP_USERS: string = process.env.LOAN_APPLICATION_USERS || '{}'
 export const LOAN_APP_PASSWORD: string = process.env.LOAN_APPLICATION_PASSWORD || 'LOANPC911';
 export const VIEW_DIVIDEND: number = Number(process.env.VIEW_DIVIDEND_ENABLED) || 0;
 export const BASEURL: string = process.env.BASEURL || 'http://localhost:8000';
-
+export const SERVERURL: string = process.env.SERVERURL || 'http://locahost:8080';
 
 
 //CREDIT SETTINGS

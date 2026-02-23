@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
+import { BASEURL, SERVERURL } from '../config/config'
 
 
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:8080']
+const allowedOrigins = [BASEURL, 'http://localhost:8080',SERVERURL];
 
 export function corsHandler(req: Request, res: Response, next: NextFunction) {
   const origin = req.header('origin')
