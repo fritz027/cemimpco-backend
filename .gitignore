@@ -8,6 +8,7 @@ node_modules/
 # Build folders
 dist/
 build/
+uploads/
 
 # Logs
 logs

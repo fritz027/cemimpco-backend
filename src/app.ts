@@ -27,6 +27,9 @@ app.use(express.json());
 app.use(express.static('./Dividend'));
 app.use('/uploads',express.static('uploads'));
 app.use('/uploads', express.static(path.join(process.cwd(), "uploads")));
+app.use(loggingHandler);
+app.use(corsHandler);
+
 
 // ✅ Trust proxy for secure cookies behind reverse proxies
 app.set("trust proxy", 1);
@@ -45,18 +48,17 @@ app.use(
     },
   })
 );
-
+app.use(helmet());
 logging.log('----------------------------------------');
 logging.log('Logging, Security & Configuration');
 logging.log('----------------------------------------');
-app.use(loggingHandler);
-app.use(corsHandler);
-app.use(helmet());
+
 
 // Rate limiting 100 requests per 10 mins
 const limiter = rateLimit({
     windowMs: API_TIME_LIMIT,
-    max: API_REQUEST_COUNT_LIMIT
+    max: API_REQUEST_COUNT_LIMIT,
+    skip: (req) => req.method === "OPTIONS",
 });
 app.use(limiter);
 

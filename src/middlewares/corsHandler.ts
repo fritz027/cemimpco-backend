@@ -1,29 +1,42 @@
-import { Request, Response, NextFunction } from 'express'
-import { BASEURL, SERVERURL } from '../config/config'
+import type { Request, Response, NextFunction } from "express";
+import { BASEURL, SERVERURL } from "../config/config";
 
+// normalize: no trailing slash
+const normalize = (u: string) => u.replace(/\/$/, "");
 
-const allowedOrigins = [BASEURL, 'http://localhost:8080',SERVERURL];
+const allowedOrigins = new Set(
+  [BASEURL, SERVERURL, "https://mock.cemimpco.com", "http://localhost:8080", "http://localhost:5173"]
+    .filter(Boolean)
+    .map((o) => normalize(String(o)))
+);
 
 export function corsHandler(req: Request, res: Response, next: NextFunction) {
-  const origin = req.header('origin')
+  const originRaw = req.headers.origin;
+  const origin = originRaw ? normalize(originRaw) : undefined;
 
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin)
+  // ✅ important for caches and for correct behavior with multiple origins
+  res.setHeader("Vary", "Origin");
+
+  if (origin && allowedOrigins.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
-  res.header("Vary", "Origin"); // ✅ important
-  res.header("Access-Control-Allow-Credentials", "true"); // ✅ for sessions
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  )
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET, OPTIONS')
+  // ✅ Always set these (preflight + normal)
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
 
-  if (req.method === 'OPTIONS') {
-    // ✅ echo headers back on preflight
-    res.sendStatus(200);
-    return;
+  // ✅ respond to preflight early
+  if (req.method === "OPTIONS") {
+     res.sendStatus(204);
+     return;
   }
 
-  next()
+  next();
 }
