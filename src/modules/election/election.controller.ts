@@ -1,4 +1,4 @@
-import { Request , Response, NextFunction, response } from 'express';
+import e, { Request , Response, NextFunction, response } from 'express';
 import { APP_NAME,BASEURL,SECTION_NAME, SERVER_HOSTNAME, SERVER_PORT,SERVERURL } from '../../config/config';
 import { 
   updateElecomList, 
@@ -13,6 +13,13 @@ import {
   deleteCandidate,
   getCandidateByIdAndYear,
   submitVote,
+  checkMemberHasVoted,
+  fetchBallot,
+  fetchVoteCasted,
+  getTotalRegisteredVoters,
+  getTotalCastedVotes,
+  getTotalPosition,
+  getTotalCandidates,
 
 
 } from './election.service';
@@ -412,12 +419,12 @@ export const getAllCandidates = async (
     }
 
     // ✅ year comes from query as string | string[] | undefined
-    const yearRaw = req.query.year;
+    const yearRaw = req.query?.year;
 
-    if (typeof yearRaw !== "string") {
+    if (!yearRaw) {
       return res.status(400).json({
         success: false,
-        message: "Invalid request: year is required",
+        message: "Year parameter is required",
       });
     }
 
@@ -426,9 +433,9 @@ export const getAllCandidates = async (
     if (!Number.isInteger(year) || year < 1900 || year > 3000) {
       return res.status(400).json({
         success: false,
-        message: "Invalid request: year must be a valid number",
+        message: "Year must be a valid number",
       });
-    }
+}
 
     const candidates = await fetchAllCandidates(year);
 
@@ -649,13 +656,10 @@ export const removeCandidate = async (
   try {
     const memberNo = req.user?.memberNo;
     if (!memberNo) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const {id, mno, year }= req.query;
+    const { id, mno, year } = req.query;
 
     if (
       typeof id !== "string" || !id.trim() ||
@@ -669,19 +673,57 @@ export const removeCandidate = async (
     }
 
     const yearNumber = Number(year);
-    if (isNaN(yearNumber)) {
+    if (!Number.isFinite(yearNumber)) {
       return res.status(400).json({
         success: false,
         message: "Year must be a valid number",
       });
     }
-    const isDeleted = await deleteCandidate(id,mno, yearNumber);
 
+    // ✅ 1) Get existing candidate first (so we know the photo_url)
+    // Use ANY function that returns candidate row with photo_url
+    // Example signature: getCandidateByIdAndYear(id, year) -> { photo_url?: string } | null
+    const existing = await getCandidateByIdAndYear(id.trim(), yearNumber);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Candidate not found",
+      });
+    }
+
+    // ✅ 2) Delete DB row first
+    const isDeleted = await deleteCandidate(id.trim(), mno.trim(), yearNumber);
     if (!isDeleted) {
       return res.status(404).json({
         success: false,
         message: "Candidate not found",
       });
+    }
+
+    // ✅ 3) Delete photo file (best-effort; don't fail API if deletion fails)
+    const photoUrl = existing.photo_url ? String(existing.photo_url) : "";
+
+    // only handle our local uploads path
+    // supports:
+    // - http(s)://domain/uploads/candidates/abc.jpg
+    // - /uploads/candidates/abc.jpg
+    const marker = "/uploads/candidates/";
+    const idx = photoUrl.indexOf(marker);
+
+    if (idx !== -1) {
+      const filename = photoUrl.substring(idx + marker.length).split("?")[0].split("#")[0];
+
+      if (filename) {
+        const filePath = path.join(process.cwd(), "uploads", "candidates", filename);
+
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (err) {
+          logging.warn(`Failed to delete candidate photo file: ${err}`);
+        }
+      }
     }
 
     return res.status(200).json({
@@ -694,7 +736,7 @@ export const removeCandidate = async (
     next(error);
 
   }
-}
+};
 
 
 export const getElecomUsers = async (
@@ -814,5 +856,109 @@ export const castVote = async (req: Request, res: Response, next:NextFunction) =
     e.statusCode = statusCode;  // attach for error handler
     logging.error(`Error casting votes: ${msg} - ${statusCode}`);
     return next(e);
+  }
+};
+
+export const memberHasVoted = async (req: Request, res: Response, next:NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {  
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+    const year = Number(req.query?.year);
+    if (!year) return res.status(400).json({ success:false, message:"Invalid year" });
+
+    const isVoted = await checkMemberHasVoted(memberNo, year);
+
+    return res.status(200).json({
+      success: true,
+      isVoted
+    });
+    
+  } catch (error) {
+    logging.error(`Error in checking member has voted: ${error}`);
+    next(error);
+  }
+}
+
+export const getVoteCasted = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const year = Number(req.params.year);
+
+    // ✅ better validation
+    if (!Number.isInteger(year)) {
+      return res.status(400).json({ success: false, message: "Invalid year" });
+    }
+
+    const ballot = await fetchBallot(memberNo, year);
+    if (!ballot) {
+      return res.status(404).json({ success: false, message: "Ballot not found!" });
+    }
+
+    const votes = await fetchVoteCasted(memberNo, year);
+
+    // ✅ if votes is an array, check length
+    if (!votes || votes.length === 0) {
+      return res.status(404).json({ success: false, message: "No votes found!" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      ballot,
+      votes,
+    });
+  } catch (error) {
+    logging.error(`Error getting vote casted: ${error}`);
+    return next(error);
+  }
+};
+
+export const getElectionStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const year = Number(req.params.year);
+
+    if (!Number.isInteger(year) || year < 1900 || year > 3000) {
+      return res.status(400).json({ success: false, message: "Invalid year" });
+    }
+
+    const [
+      totalRegisterVoter,
+      totalCastedVote,
+      totalPosition,
+      totalCandidates,
+    ] = await Promise.all([
+      getTotalRegisteredVoters(),
+      getTotalCastedVotes(year),
+      getTotalPosition(),
+      getTotalCandidates(year),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      totalRegisterVoter,
+      totalCastedVote,
+      totalPosition,
+      totalCandidates,
+    });
+  } catch (error) {
+    logging.error(`Error getting elections status: ${error}`);
+    return next(error);
   }
 };

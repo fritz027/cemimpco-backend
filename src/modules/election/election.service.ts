@@ -1,5 +1,5 @@
 import { QueryStatement } from "../../database/query";
-import { ElectionSetting, Position,Candidate, CandidatesResult,CandidatePhotoRow } from "./election.type";
+import { ElectionSetting, Position,Candidate, CandidatesResult,CandidatePhotoRow, Ballots, MemberVoteCasted } from "./election.type";
 import { APP_NAME, SECTION_NAME } from "../../config/config";
 import { withCoopTransaction } from '../../database/withTx';
 import { queryOnConn } from "../../database/queryOnConn";
@@ -232,7 +232,7 @@ export async function updateCandidate(payload: Candidate): Promise<Candidate> {
 
 export async function deleteCandidate(id: string, memberNo: string, year: number): Promise<boolean> {
   try {
-    const sql = `DELETE FROM evs_candidate
+    const sql = `DELETE FROM evs_candidates
                 WHERE candidate_id = ? 
                 AND member_no = ?
                 AND elect_year = ?`;
@@ -402,3 +402,128 @@ export async function submitVote(payload: {
     throw err;
   }
 }
+
+export async function checkMemberHasVoted(memberNo: string, year: number): Promise<boolean> {
+  try {
+    const sql = `SELECT TOP 1 1
+              FROM evs_ballots
+              WHERE elect_year = ?
+              AND member_no = ?`;
+    const result : any = await QueryStatement(sql, [year, memberNo]);
+    return result.length > 0;
+  } catch (error) {
+    logging.error(`Error on checking member has voted: ${error} `);
+    throw error;
+  }
+}
+
+export async function fetchBallot(
+  memberNo: string,
+  year: number
+): Promise<Ballots | null> {
+  try {
+    const sql = `
+      SELECT TOP 1 *
+      FROM evs_ballots
+      WHERE member_no = ?
+      AND elect_year = ?
+    `;
+
+    const result: Ballots[] = await QueryStatement(sql, [memberNo, year]);
+
+    return result.length > 0 ? result[0] : null;
+
+  } catch (error) {
+    logging.error(`Error fetching ballot: ${error}`);
+    throw error;
+  }
+}
+
+
+export async function fetchVoteCasted(
+  memberNo: string,
+  year: number
+): Promise<MemberVoteCasted[]> {
+  try {
+    const sql = `SELECT 
+              c.candidate_id,
+              c.member_no AS candidate_member_no,
+              m.member_name AS candidate_name,
+              c.vision,
+              c.position_id,
+              p.position_desc,
+              c.photo_url
+          FROM evs_votes v
+          LEFT JOIN evs_candidates c 
+              ON c.candidate_id = v.candidate_id
+          LEFT JOIN evs_position p 
+              ON p.position_id = c.position_id
+          LEFT JOIN member m  
+              ON m.member_no = c.member_no
+          WHERE v.member_no = ?
+          AND v.elect_year = ?`
+    const rows : MemberVoteCasted[] = await QueryStatement(sql, [memberNo, year]);
+
+    return rows ?? [];
+
+  } catch (error) {
+    logging.error(`Error fetching vote casted: ${error}`);
+    throw error;
+  }
+}
+
+export async function getTotalRegisteredVoters(): Promise<number> {
+  try {
+    const sql = `
+      SELECT COUNT(*) AS total_register
+      FROM member
+      WHERE member_type = 'R'
+      AND mbr_status = 'A'
+    `;
+
+    const result: any[] = await QueryStatement(sql);
+
+    return result.length > 0 ? Number(result[0].total_register) : 0;
+
+  } catch (error) {
+    logging.error(`Error getting total Registered voters: ${error}`);
+    throw error;
+  }
+}
+
+export async function getTotalCastedVotes (year: number): Promise<number> {
+  try {
+    const sql = `SELECT count(*) as total_casted_votes FROM evs_ballots WHERE elect_year = ?`;
+    const result: any[] = await QueryStatement(sql,[year]);
+
+    return result.length > 0 ? Number(result[0].total_casted_votes) : 0;
+  } catch (error) {
+    logging.error(`Error getting total casted votes: ${error}`);
+    throw error;
+  }
+}
+
+export async function getTotalPosition (): Promise<number> {
+  try {
+    const sql = `SELECT sum(position) as total_position FROM evs_position`;
+    const result: any[] = await QueryStatement(sql);
+
+    return result.length > 0 ? Number(result[0].total_position) : 0;
+  } catch (error) {
+    logging.error(`Error getting total casted votes: ${error}`);
+    throw error;
+  }
+}
+export async function getTotalCandidates (year: number): Promise<number> {
+  try {
+    const sql = `SELECT count(*) as total_candidates FROM evs_candidates WHERE elect_year = ?`;
+    const result: any[] = await QueryStatement(sql,[year]);
+
+    return result.length > 0 ? Number(result[0].total_candidates) : 0;
+  } catch (error) {
+    logging.error(`Error getting total casted votes: ${error}`);
+    throw error;
+  }
+}
+
+

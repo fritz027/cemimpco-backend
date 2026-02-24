@@ -18,7 +18,10 @@ import {
  getElecomUsers,
  addElecomUser,
  removeElecomUser,
- castVote
+ castVote,
+ memberHasVoted,
+ getVoteCasted,
+ getElectionStatus
 } from './election.controller';
 
 const router = Router();
@@ -28,7 +31,9 @@ router.route('/elecoms').get(protectElection, asyncHandler(getElecomList));
 router.route('/positions').get(protect, asyncHandler(getAllPosition));
 router.route('/candidates').get(protect, asyncHandler(getAllCandidates));
 router.route('/elecom-users').get(protectElection, asyncHandler(getElecomUsers));
-
+router.route('/is-voted').get(protect, asyncHandler(memberHasVoted));
+router.route('/:year/ballot').get(protect, asyncHandler(getVoteCasted));
+router.route('/:year/status').get(protectElection, asyncHandler(getElectionStatus));
 
 //POST ROUTES
 router.route('/new/position').post(protectElection, asyncHandler(createNewPosition));

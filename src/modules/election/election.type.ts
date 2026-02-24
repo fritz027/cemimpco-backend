@@ -39,3 +39,20 @@ export interface CandidatePhotoRow {
   year: number;
   photo_url: string | null;
 }
+
+export interface Ballots {
+  ballot_no: number;
+  elect_year: number;
+  member_no: string;
+  vote_date: string | Date;
+}
+
+export interface MemberVoteCasted {
+  candidate_id: string;
+  candidate_member_no: string;
+  candidate_name: string;
+  vision: string;
+  position_id: string;
+  position_desc: string;
+  photo_url: string;
+}
