@@ -20,6 +20,7 @@ import {
   getTotalCastedVotes,
   getTotalPosition,
   getTotalCandidates,
+  getElectionResutls,
 
 
 } from './election.service';
@@ -959,5 +960,53 @@ export const getElectionStatus = async (
   } catch (error) {
     logging.error(`Error getting elections status: ${error}`);
     return next(error);
+  }
+};
+
+export const electionResultsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // ✅ accept year from /election/results/:year OR ?year=2026
+    const yearRaw = (req.params.year ?? req.query.year) as string | undefined;
+
+    if (!yearRaw) {
+      return res.status(400).json({
+        success: false,
+        message: "Year is required",
+      });
+    }
+
+    // ✅ parse and validate
+    const year = Number(yearRaw);
+    if (!Number.isInteger(year) || year < 1900 || year > 3000) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid year",
+      });
+    }
+
+    const [
+      totalRegisterVoter,
+      totalCastedVote,
+      results,
+    ] = await Promise.all([
+      getTotalRegisteredVoters(),
+      getTotalCastedVotes(year),
+      getElectionResutls(year),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      year,
+      results,
+      totalCastedVote,
+      totalRegisterVoter
+    });
+  } catch (error) {
+    logging.error(`Error getting election results: ${error}`);
+    next(error);
   }
 };

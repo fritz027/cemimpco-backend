@@ -1,5 +1,5 @@
 import { QueryStatement } from "../../database/query";
-import { ElectionSetting, Position,Candidate, CandidatesResult,CandidatePhotoRow, Ballots, MemberVoteCasted } from "./election.type";
+import { ElectionSetting, Position,Candidate, CandidatesResult,CandidatePhotoRow, Ballots, MemberVoteCasted, ElectionResults } from "./election.type";
 import { APP_NAME, SECTION_NAME } from "../../config/config";
 import { withCoopTransaction } from '../../database/withTx';
 import { queryOnConn } from "../../database/queryOnConn";
@@ -525,4 +525,47 @@ export async function getTotalCandidates (year: number): Promise<number> {
   }
 }
 
+export async function getElectionResutls(
+  year: number
+): Promise<ElectionResults[]> {
+  try {
+    const sql = `
+      SELECT 
+        COUNT(v.candidate_id) AS votes,
+        ? AS elect_year,
+        c.candidate_id,
+        m.member_no,
+        m.member_name,
+        c.position_id,
+        p.position_desc,
+        c.photo_url
+      FROM evs_candidates c
+      LEFT JOIN evs_votes v 
+        ON v.candidate_id = c.candidate_id
+        AND v.elect_year = ?
+      LEFT JOIN evs_position p 
+        ON p.position_id = c.position_id
+      LEFT JOIN member m 
+        ON m.member_no = c.member_no
+      GROUP BY 
+        c.candidate_id,
+        m.member_no,
+        m.member_name,
+        c.position_id,
+        p.position_desc,
+        c.photo_url
+      ORDER BY 
+        c.position_id, votes DESC
+    `;
 
+    const result: ElectionResults[] = await QueryStatement(sql, [
+      year, // for SELECT ? AS elect_year
+      year  // for JOIN condition
+    ]);
+
+    return result ?? [];
+  } catch (error) {
+    logging.error(`Error in getting election result: ${error}`);
+    throw error;
+  }
+}

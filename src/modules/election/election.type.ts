@@ -56,3 +56,14 @@ export interface MemberVoteCasted {
   position_desc: string;
   photo_url: string;
 }
+
+export interface ElectionResults {
+  votes: number;
+  elect_year: number;
+  candidate_id: string;
+  member_no: string;
+  member_name: string;
+  position_id: string;
+  position_desc: string;
+  photo_url: string;
+}
