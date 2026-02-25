@@ -125,6 +125,17 @@ export async function checkWebUserByMemberNo(memberNo: string): Promise<boolean>
   }
 }
 
+export async function checkMemberStatus(memberNo: string): Promise<boolean> {
+  try {
+    const sql = 'SELECT 1 FROM member WHERE mbr_status =? AND member_no = ?'
+    const rows = await QueryStatement(sql,["A",memberNo]);
+    return rows.length > 0;
+  } catch (error) {
+    logging.error(`Error in checking web user by member no: ${error}`);
+    throw error;
+  }
+}
+
 export async function updateUserLogin(memberNo: string, email: string, dateUpdated: Date | string): Promise<boolean>{
   try {
     const sql = `UPDATE webuser SET verified = ?, token = ?, updated_at = ?
@@ -244,6 +255,37 @@ export async function fetchAllCandidates(year: number):Promise<CandidatesResult[
     return rows ?? [];
   } catch (error) {
     logging.error(`Error fetching all candidates: ${error}`);
+    throw error;
+  }
+}
+
+export async function checkMemberTINbyMemberNo(memberNo: string, tin: string): Promise<boolean> {
+  try {
+    const sql = `SELECT TOP 1 1 
+              FROM member
+              WHERE member_no = ?
+              AND mbr_tin_no = ?`;
+    const result : any = await QueryStatement(sql, [memberNo, tin]);
+
+    return result.length > 0;
+
+  } catch (error) {
+    logging.error(`Error check member TIN by member no: ${error}`);
+    throw error;
+  }
+}
+
+export async function checkMemberDateOfBirth(memberNo: string, dob: Date | string): Promise<boolean> {
+  try {
+     const sql = `SELECT TOP 1 1 
+              FROM member
+              WHERE member_no = ?
+              AND bdate = ?`;
+    const result : any = await QueryStatement(sql, [memberNo, dob]);
+
+    return result.length > 0;
+  } catch (error) {
+    logging.error(`Error in checking member date of birth: ${error}`);
     throw error;
   }
 }

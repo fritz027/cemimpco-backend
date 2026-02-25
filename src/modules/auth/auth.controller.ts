@@ -22,7 +22,10 @@ import {
   webUserUpdatePassword,
   fetchCreditUserRights,
   fetchSystemConfig,
-  fetchAllCandidates
+  fetchAllCandidates,
+  checkMemberTINbyMemberNo,
+  checkMemberDateOfBirth,
+  checkMemberStatus
 } from './auth.service';
 
 import {
@@ -75,6 +78,14 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
         success: false,
         message: 'Invalid Credentials',
       });
+    }
+
+    if (!WebUser.verified) {
+      return res.status(200).json({
+        succesS: false,
+        verified: WebUser.verified,
+        message: 'Please confirm you email'
+      })
     }
 
 
@@ -223,13 +234,12 @@ export const sendResetPassword = async (req: Request, res: Response, next: NextF
             <h3><strong>Hello!</strong></h3>
             <p>You are receiving this email because we received a password reset request for your account.</p>
             </br>
-            <a href=${BASEURL}/resetpassword?token=${encodeURIComponent(passwordResetToken)}
-              style="background:#ff5252; 
-              text-decoration:none !important; 
-              font-weight:500; margin-top:10px; 
-              color:#fff;text-transform:uppercase; 
-              font-size:14px;padding:10px 24px;
-              display:inline-block;border-radius:25px;">
+            <a href=${BASEURL}/reset/password?token=${encodeURIComponent(passwordResetToken)}
+               style="background-color: #42A5F5;
+                     color: white;
+                     padding: 10px 20px;
+                     text-decoration: none;
+                     border-radius: 5px;">
               Reset Password
             </a>
             </br>
@@ -241,7 +251,7 @@ export const sendResetPassword = async (req: Request, res: Response, next: NextF
             <p>Cebu Mitsumi Cooperative.</p>
           </div>
       `,
-      text: `Reset your password: ${BASEURL}/resetpassword?token=${encodeURIComponent(passwordResetToken)}`
+      text: `Reset your password: ${BASEURL}/reset/password?token=${encodeURIComponent(passwordResetToken)}`
     })
 
     return res.status(200).json({
@@ -275,20 +285,30 @@ export const verifyMemberEmailMatch = async (req: Request, res: Response, next: 
       return res.status(400).json({ success: false, message: "Invalid email format" });
     }
 
-    let isValid = false;
 
     const memberDetail = await fetchMemberByMemberNo(memberNo);
 
-    if (memberDetail && memberDetail.email?.toLowerCase() === normalizedEmail) {
-      // This should return boolean
-      isValid = await webUserExists(memberNo, normalizedEmail);
+    if (memberDetail && memberDetail.email?.toLowerCase() !== normalizedEmail) {
+      return res.status(200).json({
+        success: false,
+        message: "E-mail address did not match."
+      })
+      
+    }
+
+    const isValid = await webUserExists(memberNo, normalizedEmail);
+
+    if (isValid) {
+      return res.status(200).json({
+        success: false,
+        message: 'E-mail addres already exists!'
+      });
     }
 
     // ✅ Always same status to avoid leaking whether member exists
     return res.status(200).json({
       success: true,
-      isValid,
-      message: isValid ? "Verification successful" : "Verification failed",
+      message: "Verification successful",
     });
 
   } catch (error) {
@@ -307,18 +327,40 @@ export const verifyWebUserMemberNo = async (req: Request, res: Response, next: N
 
     const memberNo = memberNoParam.trim();
 
-    let isValid = false;
-
     const memberExist = await checkMemberByMemberNo(memberNo);
-    if (memberExist) {
-      isValid = await checkWebUserByMemberNo(memberNo);
+
+    
+
+    if (!memberExist) {
+     return res.status(200).json({
+        success: false,
+        message: "Member no did not exist"
+
+      })
+    }
+
+    const mbrStatus = await checkMemberStatus(memberNo);
+
+    if (!mbrStatus) {
+      return res.status(200).json({
+        suuccess: false,
+        message: 'Member no is In-Active please contact cemimpco Office.'
+      })
+    }
+
+    const isValid = await checkWebUserByMemberNo(memberNo);
+  
+    if (isValid) {
+      return res.status(200).json({
+        success: false,
+        message: "Account already exist"
+      })
     }
 
     // ✅ consistent response contract
     return res.status(200).json({
       success: true,
-      isValid,
-      message: isValid ? "Verification successful" : "Verification failed",
+      message: 'Acccount valid',
     });
 
   } catch (error) {
@@ -357,27 +399,27 @@ export const resendConfirmationEmail = async (req: Request, res: Response, next:
       to: email,
       subject: "Please Confirm Your Email",
       html: `
-        <div>
-          <h3><strong>Email Confirmation</strong></h3>
-          <h3>Hello ${name}</h3>
-          <br/>
-          <a href="${url}"
-            style="background:#ff5252;
-              text-decoration:none !important;
-              font-weight:500; margin-top:10px;
-              color:#fff;text-transform:uppercase;
-              font-size:14px;padding:10px 24px;
-              display:inline-block;border-radius:25px;">
-            Confirm Email
-          </a>
-          <br/><br/>
-          <p>Regards,</p>
-          <p>Cebu Mitsumi Cooperative.</p>
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h1 style="color: #333;">Email Confirmation</h1>
+          <h2 style="color: #555;">Hello ${name},</h2>
+          <p>Thank you for registering at Cebu Mitsumi Cooperative. Please confirm your email by clicking on the following link:</p>
+          <p>
+            <a href="${url}"
+              style="background-color: #42A5F5;
+                     color: white;
+                     padding: 10px 20px;
+                     text-decoration: none;
+                     border-radius: 5px;">
+              Click here to confirm your email
+            </a>
+          </p>
+          <p>If you did not request this, please ignore this email.</p>
+          <p>Regards,<br/>Cebu Mitsumi Cooperative.</p>
         </div>
       `,
-      text: `Confirm your email: ${url}`,
+      text: `Hello ${name}, please confirm your email: ${url}`,
     });
-
+    
     return res.status(200).json({
       success: true,
       message: "If the account exists, a confirmation email has been sent.",
@@ -390,7 +432,7 @@ export const resendConfirmationEmail = async (req: Request, res: Response, next:
 
 export const activateMemberLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = (req.body.token ?? req.query.token) as string | undefined;
+    const token =  req.query.token as string | undefined;
 
     if (!token) {
       return res.status(400).json({ success: false, message: "Invalid request" });
@@ -469,8 +511,10 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     const hashPassword = await hashingPassword(password);
      const dateToday = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
-    const isUpdated = await webUserUpdatePassword(email, dateToday, memberNo, hashPassword);
+    
 
+    const isUpdated = await webUserUpdatePassword(email, memberNo, hashPassword, dateToday);
+   
     if (!isUpdated) {
       return res.status(400).json({ success: false, message: "Password reset failed" });
     }
@@ -632,6 +676,101 @@ export const getAllCandidates = async (
     });
   } catch (error) {
     logging.error(`Error getting all candidates: ${error}`);
+    next(error);
+  }
+};
+
+export const verifyTIN = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const tin = req.query.tin as string;
+    const memberNo = req.query.memberNo as string;
+
+    if (!tin || !memberNo) {
+      return res.status(400).json({
+        success: false,
+        message: "TIN and Member Number are required"
+      });
+    }
+
+    //Normalized all reuired variables
+    const normMemberNo = memberNo.trim();
+    const normTIN = tin.trim();
+    const hasTIN = await checkMemberTINbyMemberNo(normMemberNo, normTIN);
+
+    if (!hasTIN) {
+      return res.status(404).json({
+        success: false,
+        message: "TIN not found for this member"
+      });
+    }
+
+
+    return res.status(200).json({
+      success: true,
+      message: "TIN verified successfully"
+    });
+
+  } catch (error) {
+    logging.error(`Error verifying TIN: ${error}`);
+    next(error);
+  }
+};
+
+export const verifyDateOfBirth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const dobRaw = req.query.dob as string | undefined;
+    const memberNoRaw = req.query.memberNo as string | undefined;
+
+    if (!dobRaw || !memberNoRaw) {
+      return res.status(400).json({
+        success: false,
+        message: "Date of birth and Member Number are required"
+      });
+    }
+
+    // Normalize
+    const memberNo = memberNoRaw.trim();
+    const dobStr = dobRaw.trim();
+
+    // Parse DOB to a date-only "YYYY-MM-DD"
+    // Accepts "YYYY-MM-DD" or any date string Date can parse, but always normalizes output.
+    const parsed = new Date(dobStr);
+    if (Number.isNaN(parsed.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date of birth format"
+      });
+    }
+
+    // Normalize to YYYY-MM-DD using UTC to avoid timezone shifting
+    const dobYYYYMMDD = parsed.toISOString().slice(0, 10);
+
+    // Replace with your real function:
+    // e.g. compares stored DOB vs dobYYYYMMDD (date-only)
+    const isMatch = await checkMemberDateOfBirth(memberNo, dobYYYYMMDD);
+
+    if (!isMatch) {
+      // For validation endpoints, 200 with verified=false is often nicer than 404.
+      return res.status(200).json({
+        success: false,
+        message: "Date of birth does not match"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Date of birth verified successfully"
+    });
+  } catch (error) {
+    logging.error(`Error verifying member date of birth: ${error}`);
     next(error);
   }
 };

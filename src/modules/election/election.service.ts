@@ -26,7 +26,6 @@ export async function updateElectionSetting(
       to: election.to,
       start: election.start
     };
-    console.log(JSON.stringify(setting))
 
     const rows : any = await QueryStatement(
       sql,

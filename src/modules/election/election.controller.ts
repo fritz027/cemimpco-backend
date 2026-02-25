@@ -37,7 +37,6 @@ export const patchElectionSetting = async (req: Request, res: Response, next: Ne
   try {
     const { year, from, to, start } = req.body.election;
      const memberNo = req.user?.memberNo;
-     console.log(req.body);
 
     if (!memberNo) {
       return res.status(401).json({
