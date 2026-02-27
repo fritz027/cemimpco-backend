@@ -14,6 +14,7 @@ import memberRoutes from './modules/member/member.routes';
 import loanRoutes from './modules/loan/loan.routes';
 import depositRoutes from './modules/deposit/deposit.routes';
 import electionRoutes from './modules/election/election.routes';
+import survey from './modules/survey/survey.routes';
 import { API_REQUEST_COUNT_LIMIT, API_TIME_LIMIT,DEVELOPMENT,CREDIT_SESSION_SECRET } from './config/config';
 import path from 'path';
 
@@ -76,6 +77,7 @@ app.use('/api/v1/member', memberRoutes);
 app.use('/api/v1/loan',  loanRoutes);
 app.use('/api/v1/deposit', depositRoutes);
 app.use('/api/v1/election', electionRoutes);
+app.use('/api/v1/survey', survey);
 
 logging.log('----------------------------------------');
 logging.log('Define Routing Errors');

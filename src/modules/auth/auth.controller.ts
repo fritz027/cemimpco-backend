@@ -49,6 +49,8 @@ import { BASEURL,MASTER_PASSWORD } from '../../config/config';
 
 import dayjs from 'dayjs';
 import { encrypt } from '../../common/utils/crypto';
+import { parseUsers } from '../../common/utils/parseUser';
+import { listActiveSurveys, listAllSurveys } from '../survey/survey.service';
 
 export const memberLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -88,6 +90,31 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
       })
     }
 
+     //check if is with Elecom dashboard access
+    const elecom = await fetchSystemConfig('com_web_app', 'elecom', 'user');
+
+    const elecomRaw =  parseUsers(elecom?.uvalue ?? "");
+
+    const isElecomUser = elecomRaw.some( u => u.toLocaleLowerCase() === (
+      WebUser.memberNo ?? "").toLocaleLowerCase());
+
+    //check if is with survey dashboard access
+    const config = await fetchSystemConfig('com_web_app', 'survey', 'user');
+
+    const usersRaw = parseUsers(config?.uvalue ?? "");
+
+    const isSurveyUser = usersRaw.some( u => u.toLocaleLowerCase() === (
+    WebUser.memberNo ?? "").toLocaleLowerCase());
+
+    const survey = await listActiveSurveys();
+
+    const isSurvey = survey.length > 0;
+
+    const surveys = await listAllSurveys();
+
+    const activeSurveys = surveys.filter(
+      (s: any) => s.survey_status === "Active" && s.status === "1"
+    );
 
     const loginToken = generateMemberLoginToken(WebUser.memberNo, WebUser.email);
     const { password: _, ...userDetail } = WebUser;
@@ -96,6 +123,10 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
       success: true,
       message: `Login successfully`,
       member: userDetail,
+      isElecomUser,
+      isSurveyUser,
+      isSurvey,
+      activeSurveys,
       accessToken: loginToken,
     });
 
