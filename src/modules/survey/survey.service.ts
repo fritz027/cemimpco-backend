@@ -302,6 +302,7 @@ export async function getSurveyResults(surveyId: string) {
       q.survey_qid,
       q.survey_seq,
       q.survey_question,
+      q.survey_context,
       a.answer,
       COUNT(*) AS total
     FROM survey_questions q
@@ -313,6 +314,7 @@ export async function getSurveyResults(surveyId: string) {
       q.survey_qid,
       q.survey_seq,
       q.survey_question,
+      q.survey_context,
       a.answer
     ORDER BY q.survey_seq ASC, q.survey_qid ASC
   `;
