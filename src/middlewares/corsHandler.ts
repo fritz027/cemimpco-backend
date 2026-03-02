@@ -5,7 +5,7 @@ import { BASEURL, SERVERURL } from "../config/config";
 const normalize = (u: string) => u.replace(/\/$/, "");
 
 const allowedOrigins = new Set(
-  [BASEURL, SERVERURL, "https://mock.cemimpco.com", "http://localhost:8080", "http://localhost:5173"]
+  [BASEURL, SERVERURL, "https://www.cemimpco.com", "https://cemimpco.com" ,"http://localhost:8080", "http://localhost:5173","https://api.cemimpco.com"]
     .filter(Boolean)
     .map((o) => normalize(String(o)))
 );

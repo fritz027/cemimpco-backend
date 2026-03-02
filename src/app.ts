@@ -16,7 +16,14 @@ import loanRoutes from './modules/loan/loan.routes';
 import depositRoutes from './modules/deposit/deposit.routes';
 import electionRoutes from './modules/election/election.routes';
 import survey from './modules/survey/survey.routes';
-import { API_REQUEST_COUNT_LIMIT, API_TIME_LIMIT,DEVELOPMENT,CREDIT_SESSION_SECRET } from './config/config';
+
+import {
+  API_REQUEST_COUNT_LIMIT,
+  API_TIME_LIMIT,
+  DEVELOPMENT,
+  CREDIT_SESSION_SECRET
+} from './config/config';
+
 import path from 'path';
 
 const app = express();
@@ -24,18 +31,24 @@ const app = express();
 logging.log('----------------------------------------');
 logging.log('Initializing API');
 logging.log('----------------------------------------');
+
+
+// ✅ MUST be before anything else
+app.set("trust proxy", true);
+
+
+
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 app.use(express.static('./Dividend'));
-app.use('/uploads',express.static('uploads'));
+app.use('/uploads', express.static('uploads'));
 app.use('/uploads', express.static(path.join(process.cwd(), "uploads")));
-app.use(loggingHandler);
 app.use(corsHandler);
+app.use(loggingHandler);
+
 app.use(cookieParser());
-
-
-// ✅ Trust proxy for secure cookies behind reverse proxies
-app.set("trust proxy", 1);
 
 app.use(
   session({
@@ -52,42 +65,45 @@ app.use(
     },
   })
 );
+
 app.use(helmet());
+
 logging.log('----------------------------------------');
 logging.log('Logging, Security & Configuration');
 logging.log('----------------------------------------');
 
 
-// Rate limiting 100 requests per 10 mins
+// ✅ Rate limit (no need custom keyGenerator now)
 const limiter = rateLimit({
-    windowMs: API_TIME_LIMIT,
-    max: API_REQUEST_COUNT_LIMIT,
-    skip: (req) => req.method === "OPTIONS",
+  windowMs: API_TIME_LIMIT,
+  limit: API_REQUEST_COUNT_LIMIT,
 });
+
 app.use(limiter);
+
 
 logging.log('----------------------------------------');
 logging.log('Define Controller Routing');
 logging.log('----------------------------------------');
-app.get('/api/v1/healthcheck', (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({ Status: 'I am  alive!' });
+
+app.get('/api/v1/healthcheck', (req: Request, res: Response) => {
+  res.status(200).json({ Status: 'I am alive!' });
 });
-// app.use('/api/v1/sample', sampleRoutes)
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/credit', creditRoutes);
 app.use('/api/v1/member', memberRoutes);
-app.use('/api/v1/loan',  loanRoutes);
+app.use('/api/v1/loan', loanRoutes);
 app.use('/api/v1/deposit', depositRoutes);
 app.use('/api/v1/election', electionRoutes);
 app.use('/api/v1/survey', survey);
 
+
 logging.log('----------------------------------------');
 logging.log('Define Routing Errors');
 logging.log('----------------------------------------');
+
 app.use(routeNotFound);
-app.use(errorHandler); //other error catcher
+app.use(errorHandler);
 
 export default app;
-
-

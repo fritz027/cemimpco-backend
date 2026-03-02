@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "CEMIMPCO-WEBAPP-MOCK",
+      name: "CEMIMPCO-WEBAPP",
       script: "build/server.js",
       watch: false,
       env: {
