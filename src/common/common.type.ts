@@ -13,6 +13,12 @@ export interface MemberResetPassword {
   email: string;
 }
 
+export interface JWTPayload {
+  memberNo: string;
+  email: string;
+  store?: string;
+}
+
 export interface SendMailOptions {
   to: string;
   subject: string;

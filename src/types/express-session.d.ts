@@ -5,7 +5,8 @@ declare module "express-session" {
     credit?: {
       uid: string;
       passwordEnc: string;
-      storeID?: string;
+      store: string;
+      loggedInAt: number;
     };
   }
 }

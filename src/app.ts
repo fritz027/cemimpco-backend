@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 
 import { corsHandler } from './middlewares/corsHandler';
 import { loggingHandler } from './middlewares/loggingHandler';
@@ -30,6 +31,7 @@ app.use('/uploads',express.static('uploads'));
 app.use('/uploads', express.static(path.join(process.cwd(), "uploads")));
 app.use(loggingHandler);
 app.use(corsHandler);
+app.use(cookieParser());
 
 
 // ✅ Trust proxy for secure cookies behind reverse proxies
@@ -41,10 +43,11 @@ app.use(
     secret: CREDIT_SESSION_SECRET as string,
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     cookie: {
       httpOnly: true,
-      secure: DEVELOPMENT,
-      sameSite: DEVELOPMENT ? "none" : "lax",
+      secure: !DEVELOPMENT,
+      sameSite: DEVELOPMENT ? "lax" : "none",
       maxAge: 15 * 60 * 1000,
     },
   })

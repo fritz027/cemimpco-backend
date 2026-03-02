@@ -1,7 +1,9 @@
 import { Request , Response, NextFunction } from 'express';
+import jwt from "jsonwebtoken";
 import {
   generateMemberLoginToken,
   generateMemberRegisterToken,
+  generateRefreshToken,
   generateResetPasswordToken,
 } from '../../common/utils/token.utils';
 
@@ -45,7 +47,7 @@ import {
   NewWebUser
 } from './auth.types'
 
-import { BASEURL,MASTER_PASSWORD } from '../../config/config';
+import { ACCESS_SECRET, BASEURL,DEVELOPMENT,MASTER_PASSWORD, REFRESH_SECRET } from '../../config/config';
 
 import dayjs from 'dayjs';
 import { encrypt } from '../../common/utils/crypto';
@@ -116,7 +118,17 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
       (s: any) => s.survey_status === "Active" && s.status === "1"
     );
 
-    const loginToken = generateMemberLoginToken(WebUser.memberNo, WebUser.email);
+    const loginToken = generateMemberLoginToken({memberNo: WebUser.memberNo, email: WebUser.email});
+    const refreshToken = generateRefreshToken({memberNo: WebUser.memberNo, email: WebUser.email});
+        
+    res.cookie("refresh_token", refreshToken,{
+      httpOnly: true,
+      secure: DEVELOPMENT,
+      sameSite: "lax",
+      path: "",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
     const { password: _, ...userDetail } = WebUser;
 
     return res.status(200).json({
@@ -132,6 +144,27 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
 
   } catch (error) {
     logging.error(`Error  member logging in: Error ${error}`);
+    next(error);
+  }
+}
+
+export const refresh = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.cookies?.refresh_token;
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Missing refresh token'
+      });
+    }
+
+    const decoded = jwt.verify(token, REFRESH_SECRET) as any;
+    const newAccessToken = generateMemberLoginToken({memberNo: decoded.memberNo, email: decoded.email});
+
+    return res.json({success: true, accessToken: newAccessToken});
+
+  } catch (error) {
+    logging.error(`Error in refreshing token: ${error}`)
     next(error);
   }
 }
@@ -178,7 +211,7 @@ export const memberRegister = async (req: Request, res: Response, next: NextFunc
 
     // 4) Hash password + create token
     const hashPassword = await hashingPassword(password);
-    const registerToken = generateMemberRegisterToken(memberNo, normalizedEmail);
+    const registerToken = generateMemberRegisterToken({memberNo, email: normalizedEmail});
     const dateToday = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
     // 5) Build payload for insert
@@ -255,7 +288,7 @@ export const sendResetPassword = async (req: Request, res: Response, next: NextF
       });
     }
 
-    const passwordResetToken = generateResetPasswordToken(memberNo, normalizedEmail);
+    const passwordResetToken = generateResetPasswordToken({memberNo, email: normalizedEmail});
     
     await sendMail({
       to: normalizedEmail,
@@ -609,16 +642,17 @@ export const userChangePassword = async (req: Request, res: Response, next: Next
 
 export const creditLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {username, password, storeID} = req.body;
+    const {username, password, store} = req.body;
 
-    if (!username || !password || !storeID) {
+    if (!username || !password || !store) {
       return res.status(400).json({
         success: false,
         message: "Invalid credentials"
       });
     }
 
-    const hasRights = await fetchCreditUserRights(username, password, storeID);
+    const hasRights = await fetchCreditUserRights(username, password, store);
+
 
     if (!hasRights) {
       return res.status(400).json({
@@ -630,12 +664,14 @@ export const creditLogin = async (req: Request, res: Response, next: NextFunctio
     req.session.credit = {
       uid: username,
       passwordEnc: encrypt(password),
-      storeID
+      store: store,
+      loggedInAt: Date.now(),
     };
+
+    req.session.cookie.maxAge = 15 * 60 * 1000;
 
     return res.status(200).json({success: true, message: "Logged in" });
     
-
   } catch (error) {
     logging.error(`Error login on credit: ${error}`);
     next(error);
@@ -805,3 +841,19 @@ export const verifyDateOfBirth = async (
     next(error);
   }
 };
+
+
+export const creditLogout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    req.session.destroy(() => {
+      res.clearCookie("sid");
+      return res.status(200).json({
+        success: true,
+        message: "Successfully Logged Out"
+      });
+    })
+  } catch (error) {
+    logging.error(`Error at credit logout: ${error}`);
+    next(error);
+  }
+}

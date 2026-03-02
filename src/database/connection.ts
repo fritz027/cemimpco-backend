@@ -16,8 +16,6 @@ type ConnMode = "coop" | "credit";
 const pools: Record<string, odbc.Pool> = {}; // only for coop/system
 
 function buildCoopConnString() {
-    logging.info(DATABASE_CONNECTION_STRING);
-    logging.info(`Driver=${DB_DRIVER};DBN=${DB_DBN};UID=${DB_UID};PWD=${DB_PWD};ServerName=${DB_SERVER_NAME}`);
   return `Driver=${DB_DRIVER};DBN=${DB_DBN};UID=${DB_UID};PWD=${DB_PWD};ServerName=${DB_SERVER_NAME}`;
 }
 

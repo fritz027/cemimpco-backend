@@ -5,7 +5,8 @@ import {
   getStores,
   getMembers,
   getMemberByMemberNo,
-  getMemberCreditHistory
+  getMemberCreditHistory,
+  newStoreCredit
 } from "./credit.controller";
 
 import {
@@ -17,10 +18,13 @@ const router = Router();
 
 
 //GET Routes
-router.route('/stores').get(protectCredit, asyncHandler(getStores));
+router.route('/stores').get( asyncHandler(getStores));
 router.route('/members').get(protectCredit, asyncHandler(getMembers));
-router.route('/search/member').get(protectCredit, asyncHandler(getMemberByMemberNo));
+router.route('/search/member/:memberNo').get(protectCredit, asyncHandler(getMemberByMemberNo));
 router.route('/history/member').get(protectCredit, asyncHandler(getMemberCreditHistory));
+
+//POST Routes
+router.route('/new').post(protectCredit, asyncHandler(newStoreCredit));
 
 
 

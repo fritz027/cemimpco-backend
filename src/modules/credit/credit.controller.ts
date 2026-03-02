@@ -6,24 +6,11 @@ import dayjs from 'dayjs';
 
 export const getStores = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const username = req.session.credit?.uid;
-    const passwordEnc = req.session.credit?.passwordEnc;
-
-    if (!username || !passwordEnc) {
-      res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-      return;
-    }
-
-    const password = decrypt(passwordEnc);
-
-    const stores = await fetchStores({username, password}); // ✅ use decrypted password
+    const stores = await fetchStores(); // ✅ use decrypted password
 
     res.status(200).json({
       success: true,
-      data: stores,
+      stores,
     });
   } catch (error) {
     logging.error(`Error getting stores: ${error}`);
@@ -50,7 +37,7 @@ export const getMembers = async (req: Request, res: Response, next: NextFunction
 
     return res.status(200).json({
       success: true,
-      data: members
+      members
     })
 
   } catch (error) {
@@ -64,9 +51,10 @@ export const getMemberByMemberNo = async (req: Request, res: Response, next: Nex
   try {
     const username = req.session.credit?.uid;
     const passwordEnc = req.session.credit?.passwordEnc;
-    const memberParam = req.query.memberNo;
+    const store = req.session.credit?.store;
+    const memberParam = req.params.memberNo;
 
-    if (!username || !passwordEnc) {
+    if (!username || !passwordEnc || !store) {
       res.status(401).json({
         success: false,
         message: "Unauthorized",
@@ -89,7 +77,7 @@ export const getMemberByMemberNo = async (req: Request, res: Response, next: Nex
 
      return res.status(200).json({
       success: true,
-      data: member
+      member
      });
 
   } catch (error) {
@@ -304,16 +292,17 @@ export const newStoreCredit = async (req: Request, res: Response, next: NextFunc
   try {
     const username = req.session.credit?.uid;
     const passwordEnc = req.session.credit?.passwordEnc;
-    const { memberNo, storeID, amount } = req.body;
+    const store = req.session.credit?.store;
+    const { memberNo, amount } = req.body.payload;
 
-    if (!username || !passwordEnc) {
+    if (!username || !passwordEnc || !store) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
+    console.log(req.body);
+
     if (
-      typeof memberNo !== "string" || memberNo.trim() === "" ||
-      typeof storeID !== "string" || storeID.trim() === ""
-    ) {
+      typeof memberNo !== "string" || memberNo.trim() === "" ) {
       return res.status(400).json({ success: false, message: "Invalid request" });
     }
 
@@ -329,14 +318,19 @@ export const newStoreCredit = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ success: false, message: "Member not found!" });
     }
 
-    const currentAvailed = Number(member[0].credit_availed ?? 0);
+    const currentAvailed = Number(member.credit_availed ?? 0);
     const totalAvailed = Math.round((currentAvailed + amountNum) * 100) / 100;
 
-    const referenceNo = await generateCreditReferenceNo({ username, password, storeID: storeID.trim() });
-
+    const referenceNo = await generateCreditReferenceNo({ username, password, storeID: store });
+    if (!store) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Store"
+      });
+    }
     await newCreditAvailed(
       { username, password },
-      { memberNo: memberNo.trim(), amount: amountNum, referenceNo, storeID: storeID.trim() }
+      { memberNo: memberNo.trim(), amount: amountNum, referenceNo, storeID: store }
     );
 
     await upadateMemberCreditAvailed({ username, password, memberNo: memberNo.trim() }, totalAvailed);

@@ -1,14 +1,14 @@
-import { QueryStatementCredit } from "../../database/query";
+import { QueryStatementCredit,QueryStatement } from "../../database/query";
 import { Store,Members,CreditPayload,CreditAvailedPayload } from "./credit.type";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 
 dayjs.extend(duration);
 
-export async function fetchStores(payload: CreditPayload): Promise<Store[]> {
+export async function fetchStores(): Promise<Store[]> {
   try {
     const sql = `SELECT * FROM store`;
-    const rows = await QueryStatementCredit(payload.username, payload.password, sql);
+    const rows = await QueryStatement(sql);
     return rows ?? [];
   } catch (error) {
     logging.error(`Error fetching stores: ${error}`);
@@ -172,7 +172,7 @@ export async function newCreditAvailed (
 ):Promise<boolean> {
   try {
     const dateCreated = dayjs().format("YYYY-MM-DD HH:mm:ss");
-    const sql = `INSERT INTO credit_availed (member_no, date_availed, auth_refno,sotre_id, amount, amount_paid)
+    const sql = `INSERT INTO credit_availed (member_no, date_availed, auth_refno,store_id, amount, amount_paid)
                 VALUES (?,?,?,?,?,?)
     `;
     const rows : any = await QueryStatementCredit(

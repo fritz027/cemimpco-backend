@@ -1,5 +1,6 @@
-import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
-import  {
+import jwt, { SignOptions } from 'jsonwebtoken';
+
+import {
   REGISTER_SECRET,
   REFRESH_EXPIRATION,
   ACCESS_SECRET,
@@ -10,36 +11,89 @@ import  {
   REGISTER_EXPIRATION,
 } from '../../config/config';
 
-import { 
-  MemberLoginPayload,
-  MemberRegisterPayload,
-  MemberResetPassword,
-} from '../common.type'
+import {
+  JWTPayload,
+} from '../common.type';
 
-export const generateMemberLoginToken = (memberNo: string, email: string): string => {
-  const payLoad: MemberLoginPayload = {memberNo, email}
-  const secret = ACCESS_SECRET;
-  const options: SignOptions = {
-    expiresIn: ACCESS_EXPIRATION as any
-  };
-  return jwt.sign(payLoad, secret, options);
-}
 
-export const generateMemberRegisterToken = (memberNo: string, email: string): string => {
-  const payLoad: MemberRegisterPayload = { memberNo, email };
-  const registerSecret = REGISTER_SECRET;
+/* -----------------------------
+   GENERIC TOKEN GENERATOR
+----------------------------- */
+
+function generateToken<T extends object>(
+  payload: T,
+  secret: string,
+  expiresIn: string
+): string {
   const options: SignOptions = {
-    expiresIn: REGISTER_EXPIRATION as any
+    expiresIn: expiresIn as any,
   };
-  return jwt.sign(payLoad, registerSecret, options);
+
+  return jwt.sign(payload, secret, options);
 }
 
 
-export const generateResetPasswordToken = (memberNo: string, email: string): string => {
-  const payload: MemberResetPassword = { memberNo,  email };
-  const forgotPasswordSecret = FORGOT_PASSSWORD_SECRET;
-  const options: SignOptions = {
-    expiresIn: FORGOT_PASSWORD_EXPIRATION as any
-  };
-  return jwt.sign(payload, forgotPasswordSecret, options);
-}
+/* -----------------------------
+   ACCESS TOKEN (LOGIN)
+----------------------------- */
+
+export const generateMemberLoginToken = (
+  payload: JWTPayload
+): string => {
+
+  return generateToken(
+    payload,
+    ACCESS_SECRET,
+    ACCESS_EXPIRATION
+  );
+};
+
+
+/* -----------------------------
+   REGISTER TOKEN
+----------------------------- */
+
+export const generateMemberRegisterToken = (
+   payload: JWTPayload
+): string => {
+
+  return generateToken(
+    payload,
+    REGISTER_SECRET,
+    REGISTER_EXPIRATION
+  );
+};
+
+
+/* -----------------------------
+   RESET PASSWORD TOKEN
+----------------------------- */
+
+export const generateResetPasswordToken = (
+  payload: JWTPayload
+): string => {
+
+  
+
+  return generateToken(
+    payload,
+    FORGOT_PASSSWORD_SECRET,
+    FORGOT_PASSWORD_EXPIRATION
+  );
+};
+
+
+/* -----------------------------
+   REFRESH ACCESS TOKEN
+----------------------------- */
+
+export const generateRefreshToken = (
+  payload: JWTPayload
+): string => {
+  
+  return generateToken(
+    payload,
+    REFRESH_SECRET,
+    REFRESH_EXPIRATION
+  );
+};

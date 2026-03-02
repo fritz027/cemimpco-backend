@@ -47,8 +47,13 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
         }
         next();
     }
-    catch (err) {
-        next(err);
+    catch (err: any) {
+      if (err?.name === "TokenExpiredError") {
+        res.status(401).json({ success: false, message: "Token expired" });
+        return;
+      }
+      res.status(401).json({ success: false, message: "Invalid token" });
+      return;
     }
 }
 
@@ -60,6 +65,9 @@ export const protectCredit = (req: Request, res: Response, next: NextFunction) =
         });
         return;
     }
+    console.log(req.session.credit);
+    req.session.touch();
+
     next();
 }
 
