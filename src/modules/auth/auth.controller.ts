@@ -237,7 +237,7 @@ export const memberRegister = async (req: Request, res: Response, next: NextFunc
           <h2 style="color: #555;">Hello ${memberName},</h2>
           <p>Thank you for registering at Cebu Mitsumi Cooperative. Please confirm your email by clicking on the following link:</p>
           <p>
-            <a href="${BASEURL}/confirm/${registerToken}"
+            <a href="${BASEURL}/confirm?token=${registerToken}"
               style="background-color: #42A5F5;
                      color: white;
                      padding: 10px 20px;
@@ -250,7 +250,7 @@ export const memberRegister = async (req: Request, res: Response, next: NextFunc
           <p>Regards,<br/>Cebu Mitsumi Cooperative.</p>
         </div>
       `,
-      text: `Hello ${memberName}, please confirm your email: ${BASEURL}/confirm/${registerToken}`,
+      text: `Hello ${memberName}, please confirm your email: ${BASEURL}/confirm?token=${registerToken}`,
     });
 
     // 8) Final response

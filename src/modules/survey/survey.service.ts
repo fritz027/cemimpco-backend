@@ -104,10 +104,23 @@ export async function getSurvey(surveyId: string): Promise<Survey | null> {
 
 export async function getSurveyQuestions(surveyId: string): Promise<SurveyQuestion[]> {
   const sql = `
-    SELECT survey_id, survey_qid, survey_seq, survey_question, survey_context
-    FROM survey_questions
-    WHERE survey_id = ?
-    ORDER BY survey_seq ASC, survey_qid ASC
+          SELECT 
+          q.survey_id, 
+          q.survey_qid, 
+          q.survey_seq, 
+          q.survey_question, 
+          q.survey_context,
+          COUNT(a.survey_id) AS total_answer -- Counts only matching answers
+      FROM survey_questions q
+      LEFT JOIN survey_answers a ON a.survey_id = q.survey_id
+      WHERE q.survey_id = ?
+      GROUP BY 
+          q.survey_id, 
+          q.survey_qid, 
+          q.survey_seq, 
+          q.survey_question, 
+          q.survey_context
+      ORDER BY q.survey_seq ASC, q.survey_qid ASC;
   `;
   return (await QueryStatement(sql, [surveyId])) as SurveyQuestion[];
 }

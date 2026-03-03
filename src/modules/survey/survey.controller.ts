@@ -15,6 +15,7 @@ import {
   updateSurvey,
   upsertQuestion,
  } from "./survey.service";
+import { fetchMembersByList, fetchSystemConfig, updateSystemConfig } from "../auth/auth.service";
 
 
 function requireMemberNo(req: any): string | null {
@@ -232,3 +233,117 @@ export async function checkMemberSurvey(req: Request, res: Response, next: NextF
     next(error);
   }
 }
+
+
+export const getSurveyUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const memberNo = requireMemberNo(req);
+    if (!memberNo) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    const config = await fetchSystemConfig('com_web_app', 'survey', 'user');
+
+    if (!config) {
+      return res.status(404).json({
+        success: false,
+        message: "Config not found"
+      });
+    }
+
+    const memberNos: string[] = JSON.parse(config.uvalue);
+
+    // Fetch member details
+    const members = await fetchMembersByList(memberNos);
+
+    return res.status(200).json({
+      success: true,
+      members
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const addSurveyUser = async (req: Request, res: Response) => {
+  const memberNo = requireMemberNo(req);
+  if (!memberNo) return res.status(401).json({ success: false, message: "Unauthorized" });
+  
+  const newMemberNo = req.body?.memberNo;
+
+  if (!newMemberNo || newMemberNo === "") {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid request'
+    });
+  }
+
+  const config = await fetchSystemConfig('com_web_app', 'survey', 'user');
+
+  if (!config) {
+    return res.status(404).json({
+      success: false,
+      message: "Config not found",
+    });
+  }
+
+  let memberNos: string[] = JSON.parse(config.uvalue);
+
+  if (memberNos.includes(newMemberNo)) {
+    return res.status(400).json({
+      success: false,
+      message: "Member already exists"
+    });
+  }
+
+  memberNos.push(newMemberNo);
+
+  await updateSystemConfig(
+    'com_web_app',
+    'survey',
+    'user',
+    JSON.stringify(memberNos)
+  );
+
+  res.json({ success: true });
+};
+
+
+export const removeSurveyUser = async (req: Request, res: Response) => {
+  const memberNo = requireMemberNo(req);
+  if (!memberNo) return res.status(401).json({ success: false, message: "Unauthorized" });
+  
+  const delMemberNo = req.query.memberNo;
+  
+  if (!delMemberNo || delMemberNo === "" ) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request"
+    });
+  }
+
+  const config = await fetchSystemConfig('com_web_app', 'survey', 'user');
+  if (!config) {
+    return res.status(404).json({
+      success: false,
+      message: "Config not found",
+    });
+  }
+
+  let memberNos: string[] = JSON.parse(config.uvalue);
+
+  memberNos = memberNos.filter(m => m !== delMemberNo);
+
+  await updateSystemConfig(
+    'com_web_app',
+    'survey',
+    'user',
+    JSON.stringify(memberNos)
+  );
+
+  res.json({ success: true });
+};

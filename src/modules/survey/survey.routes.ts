@@ -16,7 +16,10 @@ import {
   submit,
   listQuestions,
   currentSurveys,
-  checkMemberSurvey
+  checkMemberSurvey,
+  addSurveyUser,
+  getSurveyUsers,
+  removeSurveyUser
 } from './survey.controller';
 
 
@@ -35,6 +38,7 @@ router.route('/check/:surveyId').get(protect, asyncHandler(checkMemberSurvey));
 //POST ROUTES
 router.route('/:surveyId/submit').post(protect, asyncHandler(submit));
 
+
 //CRUD SURVEY
 router.route('/admin/create').post(protectSurvey, asyncHandler(adminCreateSurvey));
 router.route('/admin/:surveyId').put(protectSurvey, asyncHandler(adminUpdateSurvey));
@@ -42,6 +46,11 @@ router.route('/admin/:surveyId').delete(protectSurvey, asyncHandler(adminDeleteS
 
 router.route('/admin/:surveyId/question').post(protectSurvey, asyncHandler(adminUpsertQuestion));
 router.route('/admin/:surveyId/question/:surveyQid').delete(protectSurvey, asyncHandler(adminDeleteQuestion));
+
+//SURVEY USER API
+router.route('/admin/survey-users').get(protectSurvey, asyncHandler(getSurveyUsers));
+router.route('/admin/survey-user/new').post(protectSurvey, asyncHandler(addSurveyUser));
+router.route('/admin/survey-user/remove').delete(protectSurvey, asyncHandler(removeSurveyUser));
 
 router.route('/admin/:surveyId/result').get(protectSurvey, asyncHandler(results));
 
