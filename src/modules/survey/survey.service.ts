@@ -17,8 +17,8 @@ async function setAuditUser(appUser: string) {
   const sql = `SET TEMPORARY OPTION "app_user" = '${safe}'`;
   try {
     await QueryStatement(sql, []);
-  } catch {
-    // If not supported in your version/driver, ignore
+  } catch (e: any) {
+    logging.error(e.message ?? e);
   }
 }
 

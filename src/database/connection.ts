@@ -8,6 +8,7 @@ import {
   DB_UID,
   DB_PWD,
   DB_SERVER_NAME,
+  DB_CHARSET
 } from "../config/config";
 import logging from "../config/logging"; // adjust
 
@@ -16,7 +17,7 @@ type ConnMode = "coop" | "credit";
 const pools: Record<string, odbc.Pool> = {}; // only for coop/system
 
 function buildCoopConnString() {
-  return `Driver=${DB_DRIVER};DBN=${DB_DBN};UID=${DB_UID};PWD=${DB_PWD};ServerName=${DB_SERVER_NAME}`;
+  return `Driver=${DB_DRIVER};DBN=${DB_DBN};UID=${DB_UID};PWD=${DB_PWD};ServerName=${DB_SERVER_NAME};charset=${DB_CHARSET}`;
 }
 
 function buildCreditConnString(uid: string, password: string) {

@@ -610,9 +610,9 @@ export const patchCandidate = async (req: Request, res: Response, next: NextFunc
           const oldPath = path.join(process.cwd(), "uploads", "candidates", filename);
 
           // delete only if file exists
-          if (fs.existsSync(oldPath)) {
-            fs.unlinkSync(oldPath);
-          }
+          // if (fs.existsSync(oldPath)) {
+          //   fs.unlinkSync(oldPath);
+          // }
         }
       } catch (err) {
         // Don't fail the request if deletion fails; just log

@@ -39,32 +39,26 @@ const storage = multer.diskStorage({
 
   filename: (req, file, cb) => {
     try {
-      // candidate is sent as JSON string in multipart/form-data
+
       const raw = req.body.candidate;
       const candidate = typeof raw === "string" ? JSON.parse(raw) : raw;
 
-      const memberNo = normalizeMemberNo(candidate?.member_no);
+      // During an update, you might be sending 'id' or 'member_no' 
+      // Make sure you check both or whatever unique field you use
+      const memberNo = normalizeMemberNo(candidate?.member_no || req.body.member_no);
 
       if (!memberNo) {
-        return cb(new Error("member_no is required to name the photo"), "");
+        // Fallback: If member_no isn't in the JSON, maybe it's a separate field
+        // Or use a timestamp temporarily to prevent the error
+        return cb(new Error("member_no missing in request"), "");
       }
 
+      
       const ext = getExtFromMimetype(file);
-      const filename = `${memberNo}${ext}`;
 
-      // overwrite existing file if present (optional, but matches your requirement)
-      const fullPath = path.join(UPLOAD_DIR, filename);
-      if (fs.existsSync(fullPath)) {
-        try {
-          fs.unlinkSync(fullPath);
-        } catch {
-          // ignore unlink errors; multer will overwrite in most cases anyway
-        }
-      }
-
-      cb(null, filename);
-    } catch {
-      cb(new Error("Invalid candidate payload (candidate JSON)"), "");
+      cb(null, `${memberNo}${ext}`);
+    } catch (err) {
+      cb(new Error("Upload failed: Ensure 'candidate' JSON is sent before the file"), "");
     }
   },
 });

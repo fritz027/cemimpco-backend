@@ -17,6 +17,7 @@ export const DB_DBN: string = process.env.DB_DBN || 'database name';
 export const DB_UID: string = process.env.DB_UID || 'database user id';
 export const DB_PWD: string = process.env.DB_PWD || 'database user password';
 export const DB_SERVER_NAME: string = process.env.DB_SERVER_NAME || 'database Server name';
+export const DB_CHARSET: string = process.env.DB_CHARSET || 'charset=UTF8';
 export const DATABASE_MAXIMUM_TIMEOUT: number = process.env.DB_MAXIMUM_TIMEOUT ? Number(process.env.DB_MAXIMUM_TIMEOUT) : 10;
 export const DATABASE_LOGIN_TIMEOUT: number = process.env.DATABASE_LOGIN_TIMEOUT ? Number(process.env.DB_LOGIN_TIMEOUT) : 5;
 
