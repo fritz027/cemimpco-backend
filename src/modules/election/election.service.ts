@@ -441,7 +441,7 @@ export async function fetchBallot(
 
 export async function fetchVoteCasted(
   memberNo: string,
-  year: number
+  year: number,
 ): Promise<MemberVoteCasted[]> {
   try {
     const sql = `SELECT 
@@ -521,6 +521,18 @@ export async function getTotalCandidates (year: number): Promise<number> {
     return result.length > 0 ? Number(result[0].total_candidates) : 0;
   } catch (error) {
     logging.error(`Error getting total casted votes: ${error}`);
+    throw error;
+  }
+}
+
+export async function getTotalWebUser (): Promise<number> {
+  try {
+    const sql = `SELECT count(*) as total_web_user FROM webuser`
+    const result: any[] = await QueryStatement(sql);
+
+    return result.length > 0 ? Number(result[0].total_web_user) : 0;
+  } catch(error) {
+    logging.error(`Error getting total web user: ${error}`);
     throw error;
   }
 }

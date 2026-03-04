@@ -21,6 +21,7 @@ import {
   getTotalPosition,
   getTotalCandidates,
   getElectionResutls,
+  getTotalWebUser,
 
 
 } from './election.service';
@@ -30,6 +31,7 @@ import { fetchMemberByMemberNo } from '../member/member.service';
 import fs from "node:fs";
 import path from "node:path";
 import { error } from 'node:console';
+import { generateBallotFromHbs } from '../../common/services/pdfService';
 
 
 
@@ -943,11 +945,13 @@ export const getElectionStatus = async (
       totalCastedVote,
       totalPosition,
       totalCandidates,
+      totalWebUsers,
     ] = await Promise.all([
       getTotalRegisteredVoters(),
       getTotalCastedVotes(year),
       getTotalPosition(),
       getTotalCandidates(year),
+      getTotalWebUser(),
     ]);
 
     return res.status(200).json({
@@ -956,6 +960,7 @@ export const getElectionStatus = async (
       totalCastedVote,
       totalPosition,
       totalCandidates,
+      totalWebUsers,
     });
   } catch (error) {
     logging.error(`Error getting elections status: ${error}`);
@@ -991,10 +996,12 @@ export const electionResultsController = async (
     const [
       totalRegisterVoter,
       totalCastedVote,
+      totalWebUsers,
       results,
     ] = await Promise.all([
       getTotalRegisteredVoters(),
       getTotalCastedVotes(year),
+      getTotalWebUser(),
       getElectionResutls(year),
     ]);
 
@@ -1003,6 +1010,7 @@ export const electionResultsController = async (
       year,
       results,
       totalCastedVote,
+      totalWebUsers,
       totalRegisterVoter
     });
   } catch (error) {
@@ -1010,3 +1018,69 @@ export const electionResultsController = async (
     next(error);
   }
 };
+
+export const printPDFBallot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const ballotId = req.params.id;
+    const year = Number(req.params.year);
+
+    // ✅ better validation
+    if (!Number.isInteger(year) || !ballotId || typeof ballotId !== "string") {
+      return res.status(400).json({ success: false, message: "Invalid parameters" });
+    }
+
+    const ballot = await fetchBallot(memberNo, year);
+    if (!ballot) {
+      return res.status(404).json({ success: false, message: "Ballot not found!" });
+    }
+
+    const votes = await fetchVoteCasted(memberNo, year);
+    const data = {
+      votes,
+      ballot
+    }
+    
+    // const ballotData = {
+    //   logo: logoBase64,       // The Cooperative Logo
+    //   docIcon: docIconBase64, // The blue Google-doc style icon
+    //   transactionId: "2026000003",
+    //   timestamp: "March 04, 2026 at 4:01:10 PM",
+    //   categories: [
+    //     {
+    //       name: "BOARD OF DIRECTOR",
+    //       candidateName: "JUEVESANO, MARIVIC",
+    //       candidateImage: marivicPhotoBase64
+    //     },
+    //     {
+    //       name: "AUDIT COMMITTEE",
+    //       candidateName: "BUGTONG, MARK GIL",
+    //       candidateImage: markPhotoBase64
+    //     }
+    //   ]
+    // };
+    const pdfBuffer = await generateBallotFromHbs(data);
+    if (!pdfBuffer) {
+        return res.status(400).json({ success: false, message: "Failed to generate PDF" });
+    }
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=ballot.pdf',
+      'Access-Control-Expose-Headers': 'Content-Disposition' // Allows frontend to see the filename
+    });
+    res.send(pdfBuffer);
+    
+  } catch (error) {
+    logging.error(`Error getting election settings: ${error}`);
+    next(error);
+  }
+}

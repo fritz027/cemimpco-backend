@@ -22,7 +22,8 @@ import {
  memberHasVoted,
  getVoteCasted,
  getElectionStatus,
- electionResultsController
+ electionResultsController,
+ printPDFBallot
 } from './election.controller';
 
 const router = Router();
@@ -37,6 +38,9 @@ router.route('/:year/ballot').get(protect, asyncHandler(getVoteCasted));
 router.route('/:year/status').get(protectElection, asyncHandler(getElectionStatus));
 router.route("/results/:year").get(protectElection, asyncHandler(electionResultsController));
 router.route("/results").get(protectElection, asyncHandler(electionResultsController));
+
+//DownloadPDF
+router.route("/:year/ballot/:id/pdf").get(protect,asyncHandler(printPDFBallot));
 
 
 //POST ROUTES
