@@ -527,7 +527,11 @@ export async function getTotalCandidates (year: number): Promise<number> {
 
 export async function getTotalWebUser (): Promise<number> {
   try {
-    const sql = `SELECT count(*) as total_web_user FROM webuser`
+    const sql = `SELECT count(*) as total_web_user
+          FROM member AS m
+          WHERE mbr_status = 'A' 
+            AND member_type = 'R'
+            AND EXISTS (SELECT 1 FROM webuser AS w WHERE w.member_no = m.member_no)`;
     const result: any[] = await QueryStatement(sql);
 
     return result.length > 0 ? Number(result[0].total_web_user) : 0;
