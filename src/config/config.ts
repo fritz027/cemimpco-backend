@@ -9,7 +9,7 @@ export const SERVER_HOSTNAME: string = process.env.SERVER_HOSTNAME || 'localhost
 export const SERVER_PORT: number = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 12345;
 
 export const API_TIME_LIMIT: number = 10 * 60 * 1000; // 10 mins
-export const API_REQUEST_COUNT_LIMIT: number = 100;
+export const API_REQUEST_COUNT_LIMIT: number = process.env.API_REQUEST_COUNT_LIMIT ? Number(process.env.API_REQUEST_COUNT_LIMIT) : 100;
 //DATABASE CONNECTION
 export const DATABASE_CONNECTION_STRING: string  = process.env.DB_CONNECTION_MAIN || 'MyDatabaseConnection';
 export const DB_DRIVER: string = process.env.DB_DRIVER || 'database Driver';
