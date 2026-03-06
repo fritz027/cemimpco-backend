@@ -16,16 +16,16 @@ export async function getMemberByWebUserMemberNo(
   try {
     const sql = `
       SELECT
-        member_no as memberNo,
-        password,
-        email,
-        name,
-        verified,
-        token,
-        remember_token,
-        (SELECT member_type FROM member WHERE member_no = webuser.member_no) as type
-      FROM webuser
-      WHERE member_no = ?
+        w.member_no as memberNo,
+        w.password,
+        w.email,
+        m.member_name as name,
+        w.verified,
+        w.token,
+        w.remember_token,
+        m.member_type as type
+      FROM webuser w LEFT JOIN member m ON w.member_no = m.member_no
+      WHERE w.member_no = ?
     `;
 
     const rows = await QueryStatement<WebUser>(sql, [memberNo]);
