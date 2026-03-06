@@ -25,7 +25,7 @@ import {
 
 
 } from './election.service';
-import { fetchSystemConfig,   fetchMembersByList, updateSystemConfig } from '../auth/auth.service';
+import { fetchSystemConfig,   fetchMembersByList, updateSystemConfig, getMemberByWebUserMemberNo } from '../auth/auth.service';
 import { getMemberByMemberNo } from '../credit/credit.controller';
 import { fetchMemberByMemberNo } from '../member/member.service';
 import fs from "node:fs";
@@ -33,6 +33,50 @@ import path from "node:path";
 import { error } from 'node:console';
 import { generateBallotFromHbs } from '../../common/services/pdfService';
 
+
+async function checkElectionStatus(): Promise<boolean> {
+  try {
+    const config = await fetchSystemConfig('com_web_app', 'election', 'value');
+    if (!config) return false;
+
+    const value = JSON.parse(config.uvalue);
+    if (!value) return false;
+
+    // Destructure properties from the parsed JSON
+    const { start, from, to } = value;
+
+    // 1. Check if the master toggle 'start' is enabled
+    if (start !== true) return false;
+
+    // 2. Get the current timestamp
+    const now = Date.now();
+    
+    // 3. Convert 'from' and 'to' to timestamps
+    const startTime = new Date(from).getTime();
+    const endTime = new Date(to).getTime();
+
+    // 4. Return true only if 'now' is within the range [startTime, endTime]
+    return now >= startTime && now <= endTime;
+
+  } catch (error) {
+    logging.error(`Error checking election status: ${error}`);
+    return false;
+  }
+}
+
+async function checkMemberType(memberNo: string): Promise<boolean> {
+  try {
+    const member = await getMemberByWebUserMemberNo(memberNo);
+
+    if (member?.type != 'R') return false;
+
+    return true;
+    
+  } catch (error) {
+    logging.error(`Error checking member type: ${error}`);
+    return false;
+  }
+}
 
 
 
@@ -842,6 +886,26 @@ export const castVote = async (req: Request, res: Response, next:NextFunction) =
         message: "Unauthorized",
       });
     }
+
+    const isElection = await checkElectionStatus();
+    if (!isElection) {
+      return res.status(400).json({
+        success: false,
+        message: "Election is not open",
+      });
+    }
+
+
+    const memberType = await checkMemberType(memberNo);
+
+    if (!memberType) {
+      return res.status(400).json({
+        success: false,
+        message: "Only Regular member can vote!",
+      });
+    }
+
+    
 
     const result = await submitVote({
       year: year,

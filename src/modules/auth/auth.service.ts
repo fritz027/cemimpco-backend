@@ -22,7 +22,8 @@ export async function getMemberByWebUserMemberNo(
         name,
         verified,
         token,
-        remember_token
+        remember_token,
+        (SELECT member_type FROM member WHERE member_no = webuser.member_no) as type
       FROM webuser
       WHERE member_no = ?
     `;

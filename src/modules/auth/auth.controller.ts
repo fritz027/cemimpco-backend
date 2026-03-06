@@ -53,6 +53,7 @@ import dayjs from 'dayjs';
 import { encrypt } from '../../common/utils/crypto';
 import { parseUsers } from '../../common/utils/parseUser';
 import { listActiveSurveys, listAllSurveys } from '../survey/survey.service';
+import { getMembersProfile } from '../member/member.controller';
 
 export const memberLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -130,7 +131,7 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
     });
     
     const { password: _, ...userDetail } = WebUser;
-
+   
     return res.status(200).json({
       success: true,
       message: `Login successfully`,

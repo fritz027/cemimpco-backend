@@ -24,6 +24,7 @@ export interface WebUser {
   verified: boolean;
   token: string;
   remember_token: string
+  type?: string;
 }
 
 export interface NewWebUser {
