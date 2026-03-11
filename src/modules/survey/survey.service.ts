@@ -317,6 +317,7 @@ export async function getSurveyResults(surveyId: string) {
       q.survey_question,
       q.survey_context,
       a.answer,
+      a.member_no,
       COUNT(*) AS total
     FROM survey_questions q
     LEFT JOIN survey_answers a
@@ -328,7 +329,8 @@ export async function getSurveyResults(surveyId: string) {
       q.survey_seq,
       q.survey_question,
       q.survey_context,
-      a.answer
+      a.answer,
+      a.member_no
     ORDER BY q.survey_seq ASC, q.survey_qid ASC
   `;
   return await QueryStatement(sql, [surveyId]);
