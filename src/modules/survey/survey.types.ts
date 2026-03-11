@@ -2,7 +2,11 @@ export interface Survey {
   survey_id: string;
   survey_name: string;
   survey_from: string; // TIMESTAMP string
-  survey_to: string;   // TIMESTAMP string
+  survey_to: string;
+  total_question?: number;
+  total_responses?: number;
+  survey_status?: string;
+  status?: number;// TIMESTAMP string
 };
 
 export interface SurveyQuestion {

@@ -56,34 +56,35 @@ export async function listAllSurveys(): Promise<Survey[]> {
  try {
    const sql = `
           SELECT 
-           s.survey_id,
-           s.survey_name,
-           s.survey_from,
-           s.survey_to,
-           s.status,
- 
-           COUNT(q.survey_id) AS total_question,
- 
-           CASE
-               WHEN CURRENT DATE BETWEEN s.survey_from AND s.survey_to 
-                   THEN 'Active'
-               WHEN CURRENT DATE < s.survey_from 
-                   THEN 'Upcoming'
-               ELSE 'Closed'
-           END AS survey_status
- 
-       FROM survey s
-       LEFT JOIN survey_questions q 
-           ON q.survey_id = s.survey_id
- 
-       GROUP BY 
-           s.survey_id,
-           s.survey_name,
-           s.survey_from,
-           s.survey_to,
-           s.status
- 
-       ORDER BY s.survey_from DESC;
+          s.survey_id,
+          s.survey_name,
+          s.survey_from,
+          s.survey_to,
+          s.status,
+          COALESCE(q.total_question, 0) AS total_question,
+          COALESCE(a.total_responses, 0) AS total_responses,
+
+          CASE
+              WHEN CURRENT DATE BETWEEN s.survey_from AND s.survey_to 
+                  THEN 'Active'
+              WHEN CURRENT DATE < s.survey_from 
+                  THEN 'Upcoming'
+              ELSE 'Closed'
+          END AS survey_status
+
+      FROM survey s
+      LEFT JOIN (
+          SELECT survey_id, COUNT(*) AS total_question
+          FROM survey_questions
+          GROUP BY survey_id
+      ) q ON s.survey_id = q.survey_id
+      LEFT JOIN (
+          SELECT survey_id, COUNT(DISTINCT member_no) AS total_responses
+          FROM survey_answers
+          GROUP BY survey_id
+      ) a ON s.survey_id = a.survey_id
+
+      ORDER BY s.survey_from DESC;
    `;
    return (await QueryStatement(sql, [])) as Survey[];
  } catch (error) {

@@ -16,6 +16,7 @@ import {
   upsertQuestion,
  } from "./survey.service";
 import { fetchMembersByList, fetchSystemConfig, updateSystemConfig } from "../auth/auth.service";
+import { getTotalRegisteredVoters } from "../election/election.service";
 
 
 function requireMemberNo(req: any): string | null {
@@ -177,8 +178,18 @@ export async function submit(req: Request, res: Response, next: NextFunction) {
 export async function results(req: Request, res: Response, next: NextFunction) {
   try {
     const surveyId = req.params.surveyId;
-    const rows = await getSurveyResults(surveyId);
-    res.json({ success: true, results: rows });
+   
+    const [
+          totalRegisteredVoters,
+          results,
+        ] = await Promise.all([
+          getTotalRegisteredVoters(),
+          getSurveyResults(surveyId),
+        ]);
+
+
+
+    res.json({ success: true, results, totalRegisteredVoters });
   } catch (e) {
     next(e);
   }
@@ -193,6 +204,7 @@ export async function listQuestions(req: Request, res: Response, next: NextFunct
     const surveryId = req.params.surveyId;
 
     const questions = await getSurveyQuestions(surveryId);
+
     
     return res.status(200).json({
       success: true,
