@@ -1,0 +1,228 @@
+<div class="report-container" style="font-family: Arial, sans-serif; padding: 20px; color: #333; font-size: 10px;">
+    <header style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px;">
+        <div>
+            <h2 style="margin: 0;">PATRONAGE and INTEREST on SHARE COMPUTATION</h2>
+        </div>
+        <div style="text-align: right;">
+            <h2 style="margin: 0;">2025</h2>
+            <p style="margin: 0;">{{currentDate}}</p>
+        </div>
+    </header>
+
+    <section style="margin-top: 20px; display: flex; gap: 40px;">
+        <p><strong>Member No:</strong> {{member_no}}</p>
+        <p><strong>Member Name:</strong> {{member_name}}</p>
+    </section>
+
+    <table style="width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 10px;">
+        <tr style="background-color: yellow; font-weight: bold;">
+            <td style="padding: 5px; width: 20%;">Individual Investments</td>
+            <td style="text-align: right; width: 20%;">Amount</td>
+            <td style="width: 15%;"></td>
+            <td style="text-align: center; width: 15%;">Factor</td>
+            <td style="text-align: right; width: 15%;">Interest</td>
+            <td style="text-align: right; width: 15%;"></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Effective Share Capital</td>
+            <td style="text-align: right;">{{formatCurrency ave_sc}}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency int_on_sc}}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">10% Retention</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency sc_retention}}</td>
+            <td></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #000; font-weight: bold;">
+            <td style="padding: 5px;">Net Int Sc</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency net_int_sc}}</td>
+            <td style="text-align: right;">{{formatCurrency net_int_sc}}</td>
+        </tr>
+    </table>
+
+    <table style="width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 10px;">
+        <tr style="background-color: yellow; font-weight: bold;">
+            <td style="padding: 5px; width: 40%;" colspan="2">Patronage Refund</td>
+            <td style="width: 15%;"></td>
+            <td style="width: 15%;"></td>
+            <td style="width: 15%;"></td>
+            <td style="width: 15%;"></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Individual Interest Paid</td>
+            <td style="text-align: right;">{{formatCurrency int_on_loans}}</td>
+            <td style="text-align: right;"></td>
+            <td style="text-align: right;"></td>
+            <td style="text-align: right;">{{formatCurrency patronage_on_loans}}</td>
+            <td></td>
+            
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Commision Ar</td>
+            <td style="text-align: right;">{{formatCurrency commision_ar}}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency patref_comm_ar}}</td>
+            <td style="width: 20%;"></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Consumer</td>
+            <td style="text-align: right;">{{formatCurrency consumer}}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency patref_consumer}}</td>
+            <td style="width: 20%;"></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Our Shoppe</td>
+            <td style="text-align: right;">{{formatCurrency ourshoppe}}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency ourshoppe_patronage}}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Canteen Cashless</td>
+            <td style="text-align: right;">{{formatCurrency canteen_cashless}}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency canteen_patronage}}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Canteen Credit</td>
+            <td style="text-align: right;">{{formatCurrency canteen_credit}}</td>
+            <td style="text-align: right;">{{formatCurrency canteen_credit}}</td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency patref_canteen}}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Skye Rest</td>
+            <td style="text-align: right;">{{formatCurrency skye_rest}}</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency sky_rest_patronage}}</td>
+            <td></td>
+        </tr>
+        <tr>
+          <td style="padding: 5px;">Naga Cash</td>
+          <td style="text-align: right;">{{formatCurrency naga_cash}}</td>
+          <td></td>
+          <td></td>
+          <td style="text-align: right;">{{formatCurrency naga_cash_patronage}}</td>
+          <td></td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Naga Cshlss</td>
+            <td style="text-align: right;">{{formatCurrency naga_cshlss}}</td>
+            <td style="text-align: right;">{{formatCurrency naga_cshlss_patronage}}</td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency naga_cshlss_patronage}}</td>
+            <td></td>
+        </tr>
+        <tr style="font-weight: bold; border-top: 1px solid #000;">
+            <td style="padding: 5px; margin-left: 20px;" colspan="3">Total Patref</td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;">{{formatCurrency total_patref}}</td>
+        </tr>
+    </table>
+
+    <table style="margin-top: 20px; text-align: left; width: 100%; font-size: 10px;">
+        <tr style="font-weight: bold; border-top: 1px solid #000;">
+          <td style="padding: 5px; width: 40%;" colspan="3">
+             <b>Total Dividend and Patronage Refund: </b>
+          </td>
+          <td></td>
+          <td></td>
+          <td style="text-align: right;">{{formatCurrency tot_divpatref}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 5px; width: 40%;" colspan="3">
+             <b>Less: Lend A Cash: </b>
+          </td> 
+          <td></td>
+          <td></td>
+          <td style="text-align: right;">{{formatCurrency lend_a_cash}}</td>
+        </tr>
+        <tr style="border-top: 1px solid #000;">
+          <td style="padding: 5px; width: 40%;" colspan="3">
+             <b>Net Lend A Cashh</b>
+          </td>
+          <td></td>
+          <td></td>
+          <td style="text-align: right;">{{formatCurrency net_of_lendacash}}</td>
+        </tr>
+    </table>
+
+    <table style="width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 10px;">
+        <thead>
+            <tr style="border-bottom: 1px solid #000;">
+                <th style="text-align: left; padding-bottom: 5px;">Loan Type</th>
+                <th style="text-align: left; padding-bottom: 5px;">Loan Id</th>
+                <th style="text-align: right; padding-bottom: 5px;">Prin Due</th>
+                <th style="text-align: right; padding-bottom: 5px;">Int Due</th>
+                <th style="text-align: right; padding-bottom: 5px;">Fines Due</th>
+                <th style="text-align: right; padding-bottom: 5px;">Patref Prin Pay</th>
+                <th style="text-align: right; padding-bottom: 5px;">Patref Int Pay</th>
+                <th style="text-align: right; padding-bottom: 5px;">Patref Fines Pay</th>
+                <th style="text-align: right; padding-bottom: 5px;"></th> 
+            </tr>
+        </thead>
+        <tbody>
+            {{#each loans}}
+            <tr>
+                <td style="padding-top: 5px;">{{loan_type}}</td>
+                <td style="padding-top: 5px;">{{loan_id}}</td>
+                <td style="text-align: right; padding-top: 5px;">{{formatCurrency prin_due}}</td>
+                <td style="text-align: right; padding-top: 5px;">{{formatCurrency int_due}}</td>
+                <td style="text-align: right; padding-top: 5px;">{{formatCurrency fines_due}}</td>
+                <td style="text-align: right; padding-top: 5px;">{{formatCurrency patref_prin_pay}}</td>
+                <td style="text-align: right; padding-top: 5px;">{{formatCurrency patref_int_pay}}</td>
+                <td style="text-align: right; padding-top: 5px;">{{formatCurrency patref_fines_pay}}</td>
+                <td></td>
+            </tr>
+            {{else}}
+            <tr>
+                <td style="padding-top: 5px;"></td>
+                <td style="padding-top: 5px;"></td>
+                <td style="text-align: right; padding-top: 5px;">0.00</td>
+                <td style="text-align: right; padding-top: 5px;">0.00</td>
+                <td style="text-align: right; padding-top: 5px;">0.00</td>
+                <td style="text-align: right; padding-top: 5px;">0.00</td>
+                <td style="text-align: right; padding-top: 5px;">0.00</td>
+                <td style="text-align: right; padding-top: 5px;">0.00</td>
+                <td></td>
+            </tr>
+            {{/each}}
+
+            {{#if loans.length}}
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="text-align: right; border-top: 1px solid #000; padding-top: 5px;">{{formatCurrency total_prin_due}}</td>
+                <td style="text-align: right; border-top: 1px solid #000; padding-top: 5px;">{{formatCurrency total_int_due}}</td>
+                <td style="text-align: right; border-top: 1px solid #000; padding-top: 5px;">{{formatCurrency total_fines_due}}</td>
+                <td style="text-align: right; border-top: 1px solid #000; padding-top: 5px;">{{formatCurrency total_patref_prin_pay}}</td>
+                <td style="text-align: right; border-top: 1px solid #000; padding-top: 5px;">{{formatCurrency total_patref_int_pay}}</td>
+                <td style="text-align: right; border-top: 1px solid #000; padding-top: 5px;">{{formatCurrency total_patref_fines_pay}}</td>
+                <td style="text-align: right; padding-top: 5px; font-weight: bold;">{{formatCurrency gross_loan_deductions}}</td>
+            </tr>
+            {{/if}}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 10px; text-align: right; border-top: 2px solid #000;">
+        <p><strong>Net Amount To Receive after Negative Deductions: <span style="font-size: 14px;"></span>{{formatCurrency final_amount}}</span></strong></p>
+    </div>
+</div>

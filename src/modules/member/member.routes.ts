@@ -11,7 +11,8 @@ import {
   getMembersTimeDeposits,
   getMembershipAge,
   getMemberCreditHistory,
-  searchRegularActiveMember
+  searchRegularActiveMember,
+  patronageDividend
 } from "./member.controller"
 
 import {
@@ -26,6 +27,7 @@ router.route('/time-deposits').get(protect, asyncHandler(getMembersTimeDeposits)
 router.route('/loans').get(protect, asyncHandler(getMembersLoans));
 router.route('/credit/history').get(protect, asyncHandler(getMemberCreditHistory));
 router.route('/search').get(protect, asyncHandler(searchRegularActiveMember));
+router.route('/patronage-dividend').get(protect, asyncHandler(patronageDividend));
 
 
 export default router;

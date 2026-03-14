@@ -1,3 +1,4 @@
+import { log } from "node:console";
 import { QueryStatement } from "../../database/query";
 import { Member, MemberDeposits, MemberLoans, MemberTimeDeposits } from "./member.types";
 import dayjs from "dayjs";
@@ -241,6 +242,71 @@ export async function fetchRegularActiveMember(
 
   } catch (error) {
     logging.error(`Error fetching regular active members: ${error}`);
+    throw error;
+  }
+}
+
+export async function fetchPatronageDividend(memberNo: string, year: number): Promise<any[]> {
+  try {
+    const safeMemberNo = memberNo.replace(/'/g, "''");
+    const sql = `
+      SELECT divpat_cemimpco_2022.member_no,   
+         divpat_cemimpco_2022.for_year,   
+         divpat_cemimpco_2022.member_name,   
+         divpat_cemimpco_2022.ave_sc,   
+         divpat_cemimpco_2022.int_on_sc,   
+         divpat_cemimpco_2022.sc_retention,   
+         divpat_cemimpco_2022.mdof_int,   
+         divpat_cemimpco_2022.total_invst_sc_ss_mdof,   
+         divpat_cemimpco_2022.int_on_loans,   
+         divpat_cemimpco_2022.patronage_on_loans,   
+         divpat_cemimpco_2022.commision_ar,   
+         divpat_cemimpco_2022.patref_comm_ar,   
+         divpat_cemimpco_2022.consumer,   
+         divpat_cemimpco_2022.patref_cons,   
+         divpat_cemimpco_2022.ourshoppe,   
+         divpat_cemimpco_2022.ourshoppe_patronage,
+			divpat_cemimpco_2022.skye_rest,
+			divpat_cemimpco_2022.sky_rest_patronage,
+         divpat_cemimpco_2022.canteen_cashless,   
+         divpat_cemimpco_2022.canteen_credit,   
+         divpat_cemimpco_2022.total_canteen,   
+         divpat_cemimpco_2022.patref_canteen,
+         divpat_cemimpco_2022.naga_cash,
+         divpat_cemimpco_2022.naga_cashless,
+         divpat_cemimpco_2022.naga_total,
+         divpat_cemimpco_2022.naga_patronage,   
+         divpat_cemimpco_2022.total_patref,   
+         divpat_cemimpco_2022.tot_divpatref,   
+         divpat_cemimpco_2022.lend_a_cash,   
+         ( divpat_cemimpco_2022.tot_divpatref - divpat_cemimpco_2022.lend_a_cash ) as net_of_lendacash,   
+         divpat_cemimpco_2022.payable,   
+         divpat_cemimpco_2022.final_amount,   
+         divpat_cemimpco_2022.acct_no,   
+         divpat_cemimpco_2022.mbr_status,   
+         tmp_loan_ded.member_no,   
+         tmp_loan_ded.op_id,   
+         tmp_loan_ded.loan_type,   
+         tmp_loan_ded.ded_code,   
+         tmp_loan_ded.loan_id,   
+         tmp_loan_ded.prin_due,   
+         tmp_loan_ded.int_due,   
+         tmp_loan_ded.fines_due,   
+         tmp_loan_ded.patref_prin_pay,   
+         tmp_loan_ded.patref_int_pay,   
+         tmp_loan_ded.patref_fines_pay,   
+         tmp_loan_ded.div_prin_pay,   
+         tmp_loan_ded.div_int_pay,   
+         tmp_loan_ded.div_fines_pay  
+    FROM divpat_cemimpco_2025 AS divpat_cemimpco_2022 LEFT OUTER JOIN tmp_loan_ded ON divpat_cemimpco_2022.member_no = tmp_loan_ded.member_no
+WHERE divpat_cemimpco_2022.for_year = ${year} and divpat_cemimpco_2022.member_no = '${safeMemberNo}'
+    `;
+
+    const rows: any[] = await QueryStatement(sql); 
+    
+    return rows ?? [];
+  } catch (error) {
+    logging.error(`Error: ${error}`);
     throw error;
   }
 }
