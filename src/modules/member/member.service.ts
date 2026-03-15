@@ -248,9 +248,9 @@ export async function fetchRegularActiveMember(
 
 export async function fetchPatronageDividend(memberNo: string, year: number): Promise<any[]> {
   try {
-    const safeMemberNo = memberNo.replace(/'/g, "''");
     const sql = `
-      SELECT divpat_cemimpco_2022.member_no,   
+      SELECT 
+         divpat_cemimpco_2022.member_no as memberNo,   
          divpat_cemimpco_2022.for_year,   
          divpat_cemimpco_2022.member_name,   
          divpat_cemimpco_2022.ave_sc,   
@@ -299,10 +299,10 @@ export async function fetchPatronageDividend(memberNo: string, year: number): Pr
          tmp_loan_ded.div_int_pay,   
          tmp_loan_ded.div_fines_pay  
     FROM divpat_cemimpco_2025 AS divpat_cemimpco_2022 LEFT OUTER JOIN tmp_loan_ded ON divpat_cemimpco_2022.member_no = tmp_loan_ded.member_no
-WHERE divpat_cemimpco_2022.for_year = ${year} and divpat_cemimpco_2022.member_no = '${safeMemberNo}'
+WHERE divpat_cemimpco_2022.for_year = ? and divpat_cemimpco_2022.member_no = ?
     `;
 
-    const rows: any[] = await QueryStatement(sql); 
+    const rows: any[] = await QueryStatement(sql,[year, memberNo]); 
     
     return rows ?? [];
   } catch (error) {

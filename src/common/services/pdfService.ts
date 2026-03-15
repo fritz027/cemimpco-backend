@@ -15,6 +15,7 @@ handlebars.registerHelper('formatCurrency', (value: number) => {
 });
 
 export const generatePatronagePdf = async (data: any): Promise<Buffer> => {
+  // console.log(data);
     const browser = await puppeteer.launch({ 
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'] 
