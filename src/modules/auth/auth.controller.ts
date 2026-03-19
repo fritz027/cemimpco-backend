@@ -458,8 +458,12 @@ export const resendConfirmationEmail = async (req: Request, res: Response, next:
 
     const { email, name, token } = user;
 
-    const url = `${BASEURL.replace(/\/$/, "")}/confirm?token=${encodeURIComponent(token)}`;
+    const generatedToken = generateMemberRegisterToken({memberNo, email});
 
+    const updateToken = await updateUserLogin(memberNo, email, dayjs().format("YYYY-MM-DD HH:mm:ss"), generatedToken);
+
+    const url = `${BASEURL.replace(/\/$/, "")}/confirm?token=${encodeURIComponent(updateToken ? generatedToken : token ?? "")}`;
+  
     await sendMail({
       to: email,
       subject: "Please Confirm Your Email",
@@ -512,7 +516,7 @@ export const activateMemberLogin = async (req: Request, res: Response, next: Nex
     const dateToday = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
     // Ideally: updateUserLogin should also validate token in WHERE clause
-    const isUpdate = await updateUserLogin(decodedToken.memberNo, decodedToken.email, dateToday);
+    const isUpdate = await updateUserLogin(decodedToken.memberNo, decodedToken.email, dateToday, null);
 
     // Optional: if already activated, treat as success (depends on your update logic)
     if (!isUpdate) {

@@ -137,12 +137,15 @@ export async function checkMemberStatus(memberNo: string): Promise<boolean> {
   }
 }
 
-export async function updateUserLogin(memberNo: string, email: string, dateUpdated: Date | string): Promise<boolean>{
+export async function updateUserLogin(memberNo: string, email: string, dateUpdated: Date | string, token: string | null): Promise<boolean>{
+  
+  const verified = token ? 0 : 1; // If token is provided, set verified to 0, otherwise set to 1
+  const tokenValue = token ?? ''; // Use the provided token or an empty string if null
   try {
     const sql = `UPDATE webuser SET verified = ?, token = ?, updated_at = ?
                 WHERE member_no = ? and email = ?
     `;
-    const rows: any = await QueryStatement(sql,[1,'',dateUpdated,memberNo,email]);
+    const rows: any = await QueryStatement(sql,[verified, tokenValue, dateUpdated, memberNo, email]);
     return (rows?.rowsAffected ?? rows?.count ?? 0) > 0;
   } catch (error) {
     logging.error(`Error updating user login activation: ${error}`);
