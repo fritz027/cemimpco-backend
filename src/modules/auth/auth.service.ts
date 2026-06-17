@@ -23,7 +23,8 @@ export async function getMemberByWebUserMemberNo(
         w.verified,
         w.token,
         w.remember_token,
-        m.member_type as type
+        m.member_type as type,
+        m.telno as mobileNo
       FROM webuser w LEFT JOIN member m ON w.member_no = m.member_no
       WHERE w.member_no = ?
     `;

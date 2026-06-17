@@ -10,7 +10,7 @@ type SemaphoreResponse<T = any> = {
 
 const instance = axios.create({
   baseURL: "https://api.semaphore.co/api/v4/",
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
   timeout: 20000,
 });
 
@@ -23,12 +23,15 @@ function handleAxiosError(error: any): SemaphoreResponse {
 
 export async function sendMessage(number: string, message: string): Promise<SemaphoreResponse> {
   try {
-    const response = await instance.post("messages",{
-      apiKey: SEMAPHORE_KEY,
-      number,
-      message,
-      senderName: SENDER_NAME
-    });
+    const response = await instance.post(
+      "otp",
+      new URLSearchParams({
+        apikey: SEMAPHORE_KEY,
+        number,
+        message: "Your OTP is: {otp}\nDo not share your OTP with others",
+        sendername: SENDER_NAME,
+      })
+    );
     const { status , statusText, data } = response;
     return {status, statusText, data};
   } catch (error) {
@@ -37,19 +40,17 @@ export async function sendMessage(number: string, message: string): Promise<Sema
   }
 }
 
-export async function sendOTPMessage(number: string): Promise<SemaphoreResponse<{code?: string}[]>>{
+export async function sendOTPMessage(number: string): Promise<SemaphoreResponse<{ code?: string }[]>> {
   try {
-
     const response = await instance.post("otp", {
-      apiKey: SEMAPHORE_KEY,
+      apikey: SEMAPHORE_KEY,      // was apiKey
       number,
-      message: "Your OTP is: {otp}\nDo not share your otp with others",
-      senderName: SENDER_NAME,
+      message: "Your OTP is: {otp}\nDo not share your OTP with others",
+      sendername: SENDER_NAME,    // was senderName
     });
 
-    const { status , statusText, data } = response;
-    return {status, statusText, data};
-
+    const { status, statusText, data } = response;
+    return { status, statusText, data };
   } catch (error) {
     logging.error(`Error sending OTP message on semaphore: ${error}`);
     return handleAxiosError(error);

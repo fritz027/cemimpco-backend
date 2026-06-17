@@ -1,5 +1,6 @@
 import { Request , Response, NextFunction } from 'express';
-import { fetchLoanApplicationsByStatus, fetchLoanDetails, fetchLoanHeader, fetchLoanTypeDetails } from './loan.service';
+import { fetchLoanApplicationByType, fetchLoanApplicationsByStatus, fetchLoanDetails, fetchLoanHeader, fetchLoanTypeDetails, fetchMemberMobileNo, fetchSharecapital, saveLoanWithAttachment } from './loan.service';
+import { checkExpiredOtp, processOtp, verifyOtp } from '../../common/services/otp.services';
 
 
 export const getLoanProfile = async (req: Request, res: Response, next: NextFunction) => {
@@ -109,4 +110,228 @@ export const getLoanTypeDetails = async (req: Request, res: Response, next: Next
     logging.error(`Error getting loan type details: ${error}`);
     return next(error);
   }
+};
+
+
+export const getMemberMobileNo = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo; 
+    if (!memberNo) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized!",
+      });
+    }
+    const mobileNo = await fetchMemberMobileNo(memberNo);
+
+    if (!mobileNo) {  
+      return res.status(404).json({
+        success: false,
+        message: "Mobile number not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      mobileNo
+    }); 
+  } catch (error) {
+    logging.error(`Error getting member mobile number: ${error}`);
+    return next(error);
+  }
+};
+
+export const getLoanApplicationType = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized!",
+      });
+    }
+    const statusParam = req.query.type;
+    if (typeof statusParam !== "string" || statusParam.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request",
+      });
+    }
+
+    const application = await fetchLoanApplicationByType(statusParam.trim());
+
+    return res.status(200).json({
+      success: true,
+      application
+    });
+  } catch (error) {
+    logging.error(`Error getting loan application type: ${error}`);
+    return next(error);
+  }
+};
+
+export const getShareCapital = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;  
+    if (!memberNo) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized!",
+      });
+    }
+    // Implement logic to fetch share capital information for the member
+    const shareCapital = await fetchSharecapital(memberNo);
+    if (shareCapital === null) {
+      return res.status(404).json({
+        success: false,
+        message: "Share capital information not found",
+      });
+    } 
+    return res.status(200).json({
+      success: true,
+      loanLimit: shareCapital
+    });
+  }
+    catch (error) {
+    logging.error(`Error getting share capital information: ${error}`);
+    return next(error);
+  }
+};
+
+export const sendOTPMessage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized!",
+      });
+    }
+    const number = req.body.number; 
+    if (typeof number !== "string" || number.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request",
+      });
+    }
+    const result = await processOtp(memberNo, number.trim());
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message || "Failed to process OTP",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: result.data
+    });
+  } catch (error) {
+    logging.error(`Error sending OTP message: ${error}`);
+    return next(error);
+  }
+};
+
+export const submitLoanApplication = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    const email = req.user?.email;
+    if (!memberNo || !email) {
+      return res.status(401).json({ success: false, message: 'Unauthorized!' });
+    }
+
+   let payload
+    try {
+      payload = JSON.parse(req.body.data)
+    } catch {
+      return res.status(400).json({ success: false, message: 'Invalid payload' })
+    }
+
+    
+
+    const { loan_type, loanamount, purpose, term, intRate } =payload;
+
+
+    if (!loan_type || !loanamount || !purpose || !term || !intRate) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    const files = (req.files as Express.Multer.File[]) ?? [];
+
+    const result = await saveLoanWithAttachment(
+      email,
+      { loan_type, memberno: memberNo, loanamount, purpose, term, intRate },
+      files
+    );
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    logging.error(`Error submitting loan application: ${error}`);
+    return next(error);
+  }
+};
+
+export const verifyOTPMessage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: 'Unauthorized!' });
+    }
+
+    const { number, otp } = req.body;
+
+    if (typeof number !== 'string' || number.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Invalid request' });
+    }
+
+    if (typeof otp !== 'string' || otp.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Invalid request' });
+    }
+
+    const result = await verifyOtp(memberNo, number.trim(), otp.trim());
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    logging.error(`Error verifying OTP: ${error}`);
+    return next(error);
+  }
+};
+
+export const checkExpiredOTPMessage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;  
+    if (!memberNo) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized!",
+      });
+    }
+    const number = req.body.number; 
+    if (typeof number !== "string" || number.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request",
+      });
+    }
+    const result = await checkExpiredOtp(memberNo, number.trim());
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message || "Failed to check OTP",
+      });
+    } 
+    return res.status(200).json({
+      success: true,
+      data: result.data
+    });
+  } catch (error) {
+    logging.error(`Error checking expired OTP message: ${error}`);
+    return next(error);
+  } 
 };

@@ -60,3 +60,6 @@ export const SENDER_NAME: string = process.env.SEMAPHORE_SENDER_NAME || "COOPERA
 //ELECTION SETTING
 export const APP_NAME: string = process.env.APP_NAME || "app name";
 export const SECTION_NAME: string = process.env.SECTION_NAME || "section name";
+
+//LOAN SETTINGS
+export const LOAN_ADMIN_EMAIL: string = process.env.LOAN_ADMIN_EMAIL || EMAIL_USERNAME;

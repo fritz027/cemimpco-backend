@@ -19,11 +19,19 @@ export interface JWTPayload {
   store?: string;
 }
 
+export interface MailAttachment {
+  filename: string;
+  content?: Buffer;
+  path?: string;
+  contentType?: string;
+}
+
 export interface SendMailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   text?: string;
+  attachments?: MailAttachment[];
 }
 
 export interface TokenResult {

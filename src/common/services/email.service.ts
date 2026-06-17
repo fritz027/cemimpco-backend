@@ -3,7 +3,7 @@ import { SendMailOptions } from "../common.type";
 import { EMAIL_USERNAME } from "../../config/config";
 
 
-export async function sendMail({to, subject, html, text}: SendMailOptions): Promise<void>{
+export async function sendMail({to, subject, html, text, attachments}: SendMailOptions): Promise<void>{
   try {
     const transporter = await createMailTransporter();
 
@@ -13,10 +13,11 @@ export async function sendMail({to, subject, html, text}: SendMailOptions): Prom
       subject,
       html,
       text,
+      attachments,
     });
   } catch (error) {
     logging.error('Email sending failed:', error);
     throw error;
   }
-  
+
 }
