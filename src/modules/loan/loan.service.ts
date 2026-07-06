@@ -1,10 +1,23 @@
 import dayjs from "dayjs";
 import { QueryStatement } from "../../database/query";
 import { DepositHeader } from "../deposit/deposit.type";
-import { LoanDetail, LoanHeader, LoanTypeDetail, LoanType, LoanApplicationData, SaveLoanResult } from "./loan.type";
+import { 
+  LoanDetail, 
+  LoanHeader, 
+  LoanTypeDetail, 
+  LoanType, 
+  LoanApplicationData, 
+  SaveLoanResult,
+  LoanAppDetail,
+  FinanceDetail,
+  PersonalDetail,
+  MemberRow 
+} from "./loan.type";
 import { SetInstallmentType } from "../../common/utils/installmentType";
 import { sendMail } from "../../common/services/email.service";
 import { EMAIL_USERNAME } from "../../config/config";
+import { generateLoanApplicationPdf } from "../../common/pdf/generateLoanApplicationPdf";
+import numberToWords from 'number-to-words';
 
 export async function fetchLoanDetails(loanID: string): Promise<LoanDetail[]>  {
   try {
@@ -108,45 +121,44 @@ async function getWebLoanId(): Promise<number> {
   return (rows?.[0]?.max_id ?? 0) + 1;
 }
 
-function buildLoanApplicationHtml(loanID: string, data: LoanApplicationData, applyDate: string, loanType: LoanType): string {
+function buildLoanApplicationHtml(loanID: string, memberNo:string, data: LoanAppDetail, applyDate: string, loanType: LoanType): string {
   return `
     <h2>New Online Loan Application</h2>
     <table border="1" cellpadding="6" cellspacing="0">
       <tr><td><strong>Loan ID</strong></td><td>${loanID}</td></tr>
-      <tr><td><strong>Member No.</strong></td><td>${data.memberno}</td></tr>
+      <tr><td><strong>Member No.</strong></td><td>${memberNo}</td></tr>
       <tr><td><strong>Application Date</strong></td><td>${applyDate}</td></tr>
       <tr><td><strong>Loan Type</strong></td><td>${loanType.loan_desc}</td></tr>
-      <tr><td><strong>Applied Amount</strong></td><td>${parseFloat(data.loanamount).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</td></tr>
-      <tr><td><strong>Purpose</strong></td><td>${data.purpose}</td></tr>
+      <tr><td><strong>Applied Amount</strong></td><td>${data.loanAmount.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</td></tr>
+      <tr><td><strong>Purpose</strong></td><td>${data.loanPurpose}</td></tr>
       <tr><td><strong>Term</strong></td><td>${data.term}</td></tr>
-      <tr><td><strong>Interest Rate</strong></td><td>${data.intRate}%</td></tr>
+      <tr><td><strong>Interest Rate</strong></td><td>${data.interestRate}%</td></tr>
     </table>
   `;
 }
 
-export async function saveLoanWithAttachment(email: string, data: LoanApplicationData, files: Express.Multer.File[]): Promise<SaveLoanResult> {
+export async function saveLoanWithAttachment(email: string, memberNo: string, loanApp: LoanAppDetail, finance: FinanceDetail, personal: PersonalDetail,  files: Express.Multer.File[]): Promise<SaveLoanResult> {
   try {
     const id = await getWebLoanId();
     const applyDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    const loanType = await fetchLoanApplicationByType(data.loan_type);
+    const loanType: LoanType | null = await fetchLoanApplicationByType(loanApp.loanType);
 
     if (!loanType) {
       return { success: false, message: 'Invalid loan type' };
     }
 
     const loanID = 'W' + id.toString().padStart(8, '0');
-    const loanAmount = parseFloat(data.loanamount);
 
     const params = [
       loanID,
       'MITZI',
-      data.memberno,
+      memberNo,
       applyDate,
-      data.loan_type,
-      loanAmount,
-      data.purpose,
-      data.term,
-      parseFloat(data.intRate),
+      loanApp.loanType,
+      loanApp.loanAmount,
+      loanApp.loanPurpose,
+      loanApp.term,
+      loanApp.interestRate,
       'P',
       loanType.installment_type,
       loanType.add_on_flag,
@@ -164,24 +176,147 @@ export async function saveLoanWithAttachment(email: string, data: LoanApplicatio
       return { success: false, message: 'Error saving loan application. Please try again later.' };
     }
 
-   const attachments = files.map(f => ({
-      filename: f.originalname,
-      path: f.path,
-      contentType: f.mimetype,
-    }));
-
-    const maillist = [EMAIL_USERNAME, email];
-
-    sendMail({
-      to: maillist,
-      subject: `New Loan Application – ${loanID}`,
-      html: buildLoanApplicationHtml(loanID, data, applyDate, loanType),
-      attachments,
-    }).catch(err => logging.error(`Failed to send loan notification email for ${loanID}: ${err}`));
+    // --- save succeeded; now build data + send email (fire-and-forget) ---
+    const templateData = await buildLoanTemplateData(loanID, memberNo, loanApp, personal, finance, applyDate, loanType);
+    console.log(templateData);
+    sendLoanApplicationEmail(loanID, email, memberNo, loanApp, applyDate, loanType, templateData, files)
+      .catch(err => logging.error(`Failed to send loan notification email for ${loanID}: ${err}`));
 
     return { success: true, message: 'Loan application submitted successfully.' };
+
   } catch (error) {
     logging.error(`Error in saveLoanWithAttachment: ${error}`);
     return { success: false, message: `Error saving loan application: ${error}` };
   }
+}
+
+
+async function getMemberDetails(memberNo: string): Promise<MemberRow | null> {
+  try {
+    const sql = `SELECT * FROM member WHERE member_no = ?`;
+    
+    // Type cast the query result if your QueryStatement function supports generics, 
+    // or cast the row variable itself.
+    const rows = await QueryStatement(sql, [memberNo]) as MemberRow[];
+    
+    // Ensure rows exists, is an array, and has at least one element
+    if (Array.isArray(rows) && rows.length > 0) {
+      return rows[0];
+    }
+    
+    return null;
+  } catch (error) {
+    logging.error(`Error fetching member details: ${error}`);
+    throw error;
+  }
+}
+
+function converNumberToWords (amount: number): string {
+  const principal = Math.floor(amount);
+  const cents = Math.round((amount - principal) * 100)
+
+  const principalToWords = numberToWords.toWords(principal);
+
+  if (cents > 0) {
+    const centsToWords = numberToWords.toWords(cents);
+    return `${principalToWords} pesos and ${centsToWords} centavos only.`;
+  }
+  return `${principalToWords} pesos only.`;
+}
+
+async function buildLoanTemplateData(
+  loanID: string,
+  memberNo: string,
+  data: LoanAppDetail,
+  personal: PersonalDetail,
+  finance: FinanceDetail,
+  applyDate: string,
+  loanType: LoanType
+) {
+  try {
+    const memberDetails = await getMemberDetails(memberNo);
+    if (!memberDetails) {
+      throw new Error(`Member details not found for member_no: ${memberNo}`);
+    }
+
+    const today = dayjs();
+    const terms = data.term * 2;
+    const interestRate = loanType.int_rate / 100; 
+    const serviceFee = loanType.service_fee / 100;
+    const interest = (data.loanAmount * interestRate) * data.term;
+    const service = data.loanAmount * serviceFee;
+    const totalLoanAmount = data.loanAmount + parseFloat(interest.toFixed(2)) + parseFloat(service.toFixed(2));
+    const monthlyDues = parseFloat(totalLoanAmount.toFixed(2)) / data.term;
+    const loanRetention = data.loanAmount * (1 / 100)
+    const insurance = Number((Math.round(data.loanAmount! / 1000) * 0.55).toFixed(2))
+    const loanAmountInWords = converNumberToWords(data.loanAmount);
+    const finesCharge =  Number(Math.round(interest +insurance).toFixed(2))
+    const totalFee = Math.round(service + finesCharge)
+    const loanProceeds = Math.round(data.loanAmount - finesCharge)
+    const monthInWord = numberToWords.toWords(data.term);
+    const dueDate = dayjs(today).add(1, 'month').format('MMM-DD-YYYY');
+    const appdate = dayjs(applyDate).format('MMMM D, YYYY');
+    
+    return {
+      loanid: loanID,
+      intRate: interestRate,
+      loanDesc: loanType.loan_desc,
+      memberNo,
+      member: memberDetails,
+      finance,
+      personal,
+      loantype: loanType.loan_type,
+      loanAmount: data.loanAmount,
+      loanwithinterest: totalLoanAmount,
+      term: data.term,
+      termsemimonthly: terms,
+      pettycash: '11711.4',
+      monthlydues: monthlyDues,
+      purpose: data.loanPurpose,
+      loanDate: today,
+      appdate: appdate,
+      service,
+      loanRetention,
+      insurance,
+      interest,
+      finesCharge,
+      totalFee,
+      loanProceeds,
+      loanAmountInWords
+    } 
+  } catch (error) {
+    logging.error(`Error building loan template data: ${error}`);
+    throw error;
+  }
+}
+
+
+async function sendLoanApplicationEmail(
+  loanID: string,
+  email: string,
+  memberNo: string,
+  data: LoanAppDetail,
+  applyDate: string,
+  loanType: LoanType,
+  templateData: any,
+  files: Express.Multer.File[]
+) {
+  const pdfPath = await generateLoanApplicationPdf(loanID, templateData);
+
+  const idImage = files.find(f => f.mimetype.startsWith('image/'));
+
+  const attachments: any[] = [
+    { filename: `LoanApplication-${loanID}.pdf`, path: pdfPath, contentType: 'application/pdf' },
+  ];
+  if (idImage) {
+    attachments.push({ filename: idImage.originalname, path: idImage.path, contentType: idImage.mimetype });
+  }
+
+  const maillist = [EMAIL_USERNAME, email];
+  return sendMail({
+    to: maillist,
+    subject: `New Loan Application – ${loanID}`,
+    html: buildLoanApplicationHtml(loanID, memberNo, data, applyDate, loanType),
+    attachments,
+  });
 }

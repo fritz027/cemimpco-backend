@@ -57,8 +57,8 @@ const storage = multer.diskStorage({
 
       // two docs share the field name "documents", so suffix with a unique part
       // to avoid the second file overwriting the first
-      const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
-      cb(null, `${memberNo}-${unique}${ext}`);
+     
+      cb(null, `${memberNo}-ID${ext}`);
     } catch {
       cb(new Error("Upload failed: ensure 'data' JSON is sent before the files"), "");
     }

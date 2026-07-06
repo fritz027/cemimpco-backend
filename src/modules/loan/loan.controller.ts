@@ -1,7 +1,18 @@
 import { Request , Response, NextFunction } from 'express';
-import { fetchLoanApplicationByType, fetchLoanApplicationsByStatus, fetchLoanDetails, fetchLoanHeader, fetchLoanTypeDetails, fetchMemberMobileNo, fetchSharecapital, saveLoanWithAttachment } from './loan.service';
+import { 
+  fetchLoanApplicationByType, 
+  fetchLoanApplicationsByStatus, 
+  fetchLoanDetails, 
+  fetchLoanHeader, 
+  fetchLoanTypeDetails, 
+  fetchMemberMobileNo, 
+  fetchSharecapital, 
+  saveLoanWithAttachment 
+} from './loan.service';
 import { checkExpiredOtp, processOtp, verifyOtp } from '../../common/services/otp.services';
-
+import { EXT_CONTENT_TYPE } from './loan.constants';
+import path from 'path';
+import fs from 'fs';
 
 export const getLoanProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -247,10 +258,10 @@ export const submitLoanApplication = async (req: Request, res: Response, next: N
 
     
 
-    const { loan_type, loanamount, purpose, term, intRate } =payload;
+    const { loan, finance, personal } =payload;
 
 
-    if (!loan_type || !loanamount || !purpose || !term || !intRate) {
+    if (!loan || !finance || !personal) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
@@ -258,7 +269,10 @@ export const submitLoanApplication = async (req: Request, res: Response, next: N
 
     const result = await saveLoanWithAttachment(
       email,
-      { loan_type, memberno: memberNo, loanamount, purpose, term, intRate },
+      memberNo,
+      loan,
+      finance,
+      personal,
       files
     );
 
@@ -334,4 +348,31 @@ export const checkExpiredOTPMessage = async (req: Request, res: Response, next: 
     logging.error(`Error checking expired OTP message: ${error}`);
     return next(error);
   } 
+};
+
+
+export const getMemberIDPicture = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: 'Unauthorized!' });
+    }
+
+    const UPLOAD_DIR = path.join(process.cwd(), "uploads", "loans");
+
+    
+    const found = Object.keys(EXT_CONTENT_TYPE)
+    .map((ext) => path.join(UPLOAD_DIR, `${memberNo}-ID${ext}`))
+    .find((p) => fs.existsSync(p));
+
+    if (!found) {
+      return res.status(404).json({ success: false, message: 'ID picture not found' });
+    }
+
+    res.type(EXT_CONTENT_TYPE[path.extname(found)]);
+    fs.createReadStream(found).pipe(res);
+  } catch (error) {
+    logging.error(`Error fetching member ID picture: ${error}`);
+    return next(error);
+  }
 };

@@ -1,0 +1,1050 @@
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+    }
+
+    .content {
+        flex: 1;
+        padding:20px;
+    }
+
+    .second-page-content {
+        flex: 1;
+        padding: 20px;
+    }
+
+    .container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo   {
+        width: 120px;
+        height: auto;
+        margin-right: 20px;
+    }
+
+    .text-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .title {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .subtitle {
+        margin: 0;
+        font-size: 10px;
+        color: #666;
+    }
+
+    .title-disclosure {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .subtitle-disclosure {
+        margin: 0;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .subtitle + .subtitle {
+        margin-top: 5px;
+    }
+
+    .subtitle-disclosure + .subtitle-disclosure {
+        margin-top: 5px;
+    }
+
+    .date-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        text-align: right;
+    }
+
+    .date-label {
+        margin: 0;
+        font-size: 12px;
+        color: #999;
+    }
+
+    .date {
+        margin: 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .loan-application-container, .payslip-container{
+        display: flex;
+        justify-content: center;
+        padding: 5px 0;
+    }
+
+    .loan-application, .payslip-title, .conforme {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0;
+        text-align: center;
+    }
+
+    .loan-applied-container, .management-container {
+        width: 60%;
+    }
+    .payslip-detail-container {
+        width: 100%;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    thead th {
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        border: none;
+    }
+    
+    tbody td {
+        font-size: 10px;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .loan-applied-note {
+        margin-top: 5px;
+        font-size: 10px;
+        color: #666;
+    }
+    
+    .big-note {
+        background-color: #e0e0e0;
+        color: #000;
+        font-size: 10;
+        font-weight: bold;
+        display: flex;
+        align-items: left;
+        justify-content: left;
+        text-align: left;
+        margin-top: 5px;
+    }
+
+    .application-container, .personal-information-container, .applicant-signature-container .promissory-note-header {
+        display: flex;
+        flex-direction: column;
+        padding: 5px;
+        margin: 0;
+    }
+
+    .applicant-signature-container {
+        margin-top: 25px;
+    }
+
+    .row {
+        display: flex;
+
+    }
+
+    .col-1, .col-8, .col-2, .col-4, .col-10, .col-5, .col-3, .col-6, .col-7{
+        box-sizing: border-box;
+        padding: 2px;
+    }
+
+    .col-8 {
+        width: 80%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-7 {
+        width: 70%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-6 {
+        width: 60%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-3 {
+        width: 30%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-5 {
+        width: 50%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-1 {
+        width: 10%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-2 {
+        width: 20%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-4 {
+        width: 40%;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .col-10 {
+        width: 100%;
+        border-bottom: 2px solid #ccc;
+    }
+    
+    .personal-information, .applicant-dealings {
+        background-color: #e0e0e0;
+        color: #000;
+        font-size: 10;
+        font-weight: bold;
+        display: flex;
+        align-items: left;
+        justify-content: left;
+        text-align: left;
+    }
+
+    .conforme-container {
+        font-size: 10px;
+    }
+
+    p {
+        font-size: 12px !important;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .fa-check {
+        padding-right: 10px;
+        font-size: 20px;
+        color: green;
+    }
+    .no-border tbody tr td {
+        margin: 0;
+        padding: 0;
+        font-size: 10px;
+        border: none;
+    }
+
+    .no-border tbody tr td:nth-child(2) {
+        border-bottom: 1px solid #333;
+    }
+    
+    .text-right {
+        font-weight: bold;
+        float: right;
+    }
+
+    .approve-by-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-top: 5px;
+    } 
+
+    .underline-container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .underline {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 60%;
+    }
+
+    .underline-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .underline-promissory {
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        width: 100%;
+    }
+
+    .left-side {
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        width: 100%;
+    }
+
+    .right-side {
+        display: flex;
+        flex-direction: column;
+        align-items: right;
+        width: 100%;
+    }
+
+    .line-promissory {
+        width: 40%;
+        border-bottom: 2px solid #333;
+        margin-bottom:  5px;
+    }
+
+    .line-disclosure {
+        width: 80%;
+        border-bottom: 2px solid #333;
+        margin-bottom:  5px;
+    }
+
+    .line {
+        width: 80%;
+        border-bottom: 2px solid #333;
+        margin-bottom:  5px;
+    }
+    
+    .label {
+        text-align: center;
+        font-weight: bold;
+        font-size: 10px;
+    }
+
+    .management-action {
+        margin-top: 5px;
+    }
+
+    .underline-container-manage {
+        display: flex;
+        width: 100%;
+    }
+
+    .underline-manage {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        width: 80%;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .manage-table thead tr th {
+        text-align: left;
+    }
+    
+    .manage-table thead tr th {
+        border-top: 1px solid #ccc;
+    }
+
+    .manage-table thead tr th:nth-of-type(1) {
+        border-left: 1px solid #ccc;
+    }
+
+    .manage-table thead tr th:nth-last-of-type(1) {
+        border-right: 1px solid #ccc;
+    }
+    
+    .manage-table tbody tr td {
+        border-bottom: none;
+        border-top: none;
+    }
+    .mb-2 {
+        margin-bottom: 20px;
+    }
+
+    .footer {
+        font-weight: bold;
+        text-align: center;
+        padding-bottom: 20px;
+        font-size: 10px;
+        margin-top: 10px;
+    }
+    
+    .sp-title-address {
+        text-align: center;
+        font-size: 12px;
+    }
+    
+    .sp-title {
+        text-align: center;
+        font-size: 14;
+        font-weight: bold;
+    }
+
+    .border-none {
+        border: none !important;
+    }
+
+    .text-f2 {
+        font-size: 10px;
+    }
+
+    .underline-number {
+        text-decoration: underline;
+        font-weight: bold;
+        white-space: pre;
+    }
+
+    .promissory-paragraph p{
+        padding: 0;
+        margin: 0;
+    }
+
+    .indent {
+        text-indent: 20px;
+    }
+
+    .mt-5 {
+
+        margin-top: 10px !important;
+    }
+
+    .mt-2 {
+        margin-top: 2px !important;
+    }
+
+    .no-spacing {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .disclosure-title-container {
+        text-align: center;
+    }
+    .text-center {
+        text-align: center;
+    }
+    .indent-10 {
+        margin-left: 10px;
+    }
+    .indent-20 {
+        margin-left: 20px;
+        white-space: pre;
+    }
+</style>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="content">
+        <div class="container">
+            <div class="logo-container">
+                <img src="{{ logo }}" width="32" class="logo">
+                <div class="text-container">
+                    <h1 class="title">Cebu Mitsumi Multi-Purpose Cooperative</h1>
+                    <p class="subtitle">Sabang Danao</p>
+                    <p class="subtitle">Tel No.: 413-0809</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LOAN APPLICATION TITLE  -->
+        <div class="loan-application-container">
+            <h2 class="loan-application">ONLINE LOAN APPLICATION FORM</h2>
+        </div>
+        
+        <!-- Loan Applied Table  -->
+        <div class="loan-applied-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Loan Type</th>
+                        <th>Interest Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ loanDesc }}</td>
+                        <td>{{ intRate }}% per month</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="loan-applied-note"><strong>Note:</strong>
+            Loan must have a photocopy of company ID with 3 signatures over printed name and bring original payslip.
+        </p>
+
+        <div class="big-note">
+            <p>NOTE: PRINT ALL INFORMATION NEAT & CLEAN (NO ERASURE). USE ONE COLOR EITHER BLACK or BLUE INK ONLY</p> 
+        </div>
+
+        <div class="application-container">
+            <div class="row">
+                <div class="col-8">Amount Applied: {{currencyFormat loanAmount }}</div>
+                <div class="col-2">Date: {{dateFormat loanDate "YYYY-MM-DD hh:mm A"}}</div>
+            </div>
+            <div class="row">
+                <div class="col-8">Purpose: {{ purpose }}</div>
+                <div class="col-2">Term: {{ term }}</div>
+            </div>
+        </div>
+        <div class="personal-information">
+            <p>PERSONAL INFORMATION</p>
+        </div>
+        <div class="personal-information-container">
+            <div class="row">
+                <div class="col-3">Company ID No.: {{ memberNo }}</div>
+                <div class="col-4">Member Name: {{ member.member_name }}</div>
+                <div class="col-3">Birth Date: {{ dateFormat member.bdate "YYYY-MM-DD" }}</div>
+            </div>
+            <div class="row">
+                <div class="col-2">Age: {{ age }}</div>
+                <div class="col-2">Civil Status: {{ member.civ_stat }}</div>
+                <div class="col-2">Gender:{{formatGender member.gender }}</div>
+                <div class="col-4">Home Ownership: {{ personal.homeOwnership }}</div>
+            </div>
+            <div class="row">
+                <div class="col-3">Mobile No.: {{ member.telno }}</div>
+                <div class="col-3">Home Tel No.: </div>
+                <div class="col-4">TIN #: {{ member.mbr_tin_no }}</div>
+            </div>
+            <div class="row">
+                <div class="col-4"># of years at company: {{ personal.yearsInCompany }}</div>
+                <div class="col-4">Company Tel No. (local): {{ personal.companyTelephone }}</div>
+                <div class="col-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-4">Line Leader/Superior: {{ personal.lineLeader }}</div>
+                <div class="col-4">Position/Rank in the Company: {{ personal.position }} </div>
+                <div class="col-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-8">Home Address: {{ member.addr_street1 }}</div>
+                <div class="col-2"></div>
+            </div>
+        </div>
+        <div class="personal-information">
+            <p>SPOUSE DATA</p>
+        </div>
+        <div class="personal-information-container mb-2">
+            <div class="row">
+                <div class="col-10">Name of Spouse: {{ personal.spouse }}</div>
+            </div>
+            <div class="row">
+                <div class="col-4">Employers Name: {{ personal.employeeName }} </div>
+                <div class="col-4">Tel No: {{ personal.telephoneNumber }} </div>
+                <div class="col-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-10">Address: {{ personal.spouseAddress }} </div>
+            </div>
+        </div>
+        <div class="payslip-container">
+            <h3 class="payslip-title">PAYSLIP DETAILS</h3>
+        </div>
+        <div class="payslip-detail-container">
+            <div class="row">
+                <div class="col-1"></div>
+                <div class="col-8">
+                    <table class="no-border">
+                        <tbody>
+                            <tr>
+                                <td>SSS/PAG-IBIG <span class="text-right">: {{currencyFormat finance.sssPagibig }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>HEALTH INSURANCE <span class="text-right">: {{currencyFormat finance.healthInsurance }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>CASH ADVANCE <span class="text-right">: {{currencyFormat finance.cashAdvance }} </span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>NET PAY <span class="text-right">: {{currencyFormat finance.netPay }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>HIGHEST AVAILMENT <span class="text-right">: {{currencyFormat finance.highestAvailment }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>HISTORY OF DELIQUENCY <span class="text-right">: {{ finance.delinquencyHistory }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>OVERTIME <span class="text-right">: {{ currencyFormat finance.overtime }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>CEMIMPCO DEDUCTION <span class="text-right">: {{ currencyFormat finance.cemimpcoDeduction }}</span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>RANK <span class="text-right">:{{ finance.rank }} </span></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>BASIC SALARY <span class="text-right">: {{ currencyFormat finance.basicSalary }}</span></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-1"></div>
+            </div>
+        </div>
+        <div class="conforme">
+            <p>CONFORME</p>
+        </div>
+        <div class="conforme-container mb-2">
+            <p>I warrant the truth and veracity of all the data, information furnished herein to the best of my knowledge. Any misdeclaration that will be discovered during credit
+                investigation will automatically cause the disapproval of this loan. I expressly submit to any credit investigation as we to furnish any other requirements of the cooperative
+                by reasons hereof. 
+            </p>
+        </div>
+        <div class="applicant-signature-container mb-2">
+            <div class="row">
+                <div class="col-10">
+                    <div class="underline-container">
+                        <div class="underline">
+                                <div class="value">{{ member.member_name }}</div>
+                                <div class="line"></div>
+                                <div class="label">Applicant Signature Over Printed Name</div>
+                        </div>
+                        <div class="underline">
+                            <div class="value">{{ dateFormat loanDate "YYYY-MM-DD hh:mm A"}}</div>
+                            <div class="line"></div>
+                            <div class="label">Date:</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="applicant-dealings">
+            <p>APPLICANT'S DEALINGS W/ THE COOPERATIVE (FOR COOP USE)</p>
+        </div>
+
+        <div class="management-action mb-2">
+            <table>
+                <tr>
+                    <td>Prepared by:</td>
+                    <td colspan="2">Loan Clerk:</td>
+                    <td>Date: </td>
+                    <td colspan="3">Management's Action:</td>
+                </tr>
+            </table>
+        </div>
+        <div class="approve-by-container mb-2">
+            <div>
+                <h4><strong>APPROVE BY:</strong></h2>
+            </div>
+            <div>
+                <p>Amount: _______________________</p>
+            </div>
+        </div>
+        <div class="management-container mb-2">
+            <table class="manage-table">
+                <thead>
+                <tr>
+                    <th>LOAN OFFICER:(300-5,000.00)</th>
+                    <th>MANAGER:</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="5">
+                            <div class="underline-container-manage">
+                                <div class="underline-manage">
+                                    <div class="value"></div>
+                                    <div class="line"></div>
+                                    <div class="label">Signature / Date</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td rowspan="5">
+                            <div class="underline-container-manage">
+                                <div class="underline-manage">
+                                    <div class="value"></div>
+                                    <div class="line"></div>
+                                    <div class="label">Signature / Date</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="footer">
+            VERIFICATION OF STATUS WILL BE ENTERTAINED AFTER 5 WORKING DAYS FROM RECEIPT OF APPLICATION BY CEMIMPCO.
+        </div>
+    </div>
+    <div class="second-page-content">
+        <div class="sp-title-address">
+            <p>Cebu Mitsumi Multipurpose Cooperative, Danao City</p>
+        </div>
+        <div class="sp-title">
+            <p>PROMISSORY NOTE</p>
+        </div>
+        <div class="promissory-note-header  mb-2">
+            <div class="row">
+                <div class="col-10 border-none">
+                    <div class="underline-container">
+                        <div class="left-side text-f2">
+                            <div class="row">
+                                <div class="col-3 border-none">PN NO.:</div>
+                                <div class="col-7 border-none ">
+                                    <div class="underline-promissory">
+                                        <div class="value"></div>
+                                        <div class="line-promissory"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 border-none">RELEASE DATE:</div>
+                                <div class="col-7 border-none">
+                                    <div class="underline-promissory">
+                                        <div class="value"></div>
+                                        <div class="line-promissory"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 border-none">DUE DATE:</div>
+                                <div class="col-7 border-none">
+                                    <div class="underline-promissory">
+                                        <div class="value"></div>
+                                        <div class="line-promissory"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 border-none">Amount of Loan: </div>
+                                <div class="col-7 border-none">
+                                    <div class="underline-promissory">
+                                        <div class="value">{{ currencyFormat loanAmount }}</div>
+                                        <div class="line-promissory"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-side">
+                            <div class="row">
+                                <div class="col-4 border-none"></div>
+                                <div class="col-6 border-none text-f2">This instrument of indebtedness was</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4 border-none"></div>
+                                <div class="col-6 border-none text-f2">executed and delivered to Multi-Purpose</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4 border-none"></div>
+                                <div class="col-6 border-none text-f2">Cooperative this ______________________</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="promissory-note-body  mb-2">
+            <div class="row">
+                <div class="col-10 border-none promissory-paragraph">
+                    <p>
+                        I agree to pay the amount of <span class="underline-number">  {{ loanAmountInWords }} Pesos  </span> (Php) <span class="underline-number"> {{ currencyFormat loanAmount  }} </span> on a
+                        installment monthly basis starting from <span class="underline-number"> {{ currencyFormat monthlyDues }} </span> until fully paid. In case of default, I am required to pay two (2) percent as
+                        penalty of my monthly amortization. When the loan remains unpaid until it reach its maturity date, all outstanding loan plus five (5) percent shall be due and demandable.
+                    </p>
+                    <p>
+                        In consideration of the said loan, I agree to pay the interest of;
+                    </p>
+                    <p class="indent">
+                        Own money loan on the principal amount received at the rate of <strong>{{ numberFormat intRate }}%</strong> per month straight,
+                    </p>
+                    <p>
+                        I agree that in case of default of any installment due and or any deviation of the loan proceeds for which the loan was intended for, the
+                        cooperative or its assignee, endorsee, is unconditionally entitled to declare all unpaid balance of the Note immediately due and payable
+                        without necessity of notice or demand and the penalty charge of <strong>2%</strong> per month shall be charge on all delayed and unpaid installments.
+                    </p>
+                    <p class="mt-5">
+                        This note is secured by collateral described briefly, to wit: ___________________________________
+                    </p>
+                    <p class="mt-2">
+                        I understand that Cooperative has the right to require Loans Restructuring or Loans Recovery which ever is applicable depending on the
+                        circumstances I have experienced.
+                    </p>
+                    <p class="mt-5">
+                        In case it shall be necessary to collect this Note by or through an attorney-at-law, or collection agency, I agree to pay <strong>25%</strong> of the amount due
+                        and for attorney's fees addition to the expenses and cost of litigation but; in no case, less than <strong>Php10,000.00</strong> In case of litigation, venue
+                        shall be vested in the competent court of the Province of Cebu or Danao or any other component court as may be allowed by the Rules of
+                        Court at the sole option of the Cooperative.
+                    </p>
+                    <p class="mt-5">
+                        Only me is authorized to renew this Note or extend the maturity date or modify the terms hereof or enter into a compromise, for portion of
+                        the whole amount of the principal with or without notice to the others.
+                    </p>
+                    <p class="mt-5">
+                        I hereby waive presentment for payment and notice of dishonor. The holder may accept partial payment reserving its right of recourse
+                        against each and all endorsers.
+                    </p>
+                    <p class="mt-5">
+                        The cooperative is hereby authorized and empowered to set off or apply without notice what is due it under this Note from whatever funds I
+                        may have with the cooperative including my deposits and share capital. In case i have several obligations to the cooperative, I hereby
+                        empower the cooperative to apply, without notice and in any manner it sees fit, any of my deposits, share capital and payments to any of my
+                        obligations whether due or not. Any such application of deposits, share capital or payments shall be conclusive and binding upon me.  
+                    </p>
+                    <p class="mt-5">
+                        In case it shall be necessary to collect Note by or through an attorney-at-law or collection agency, I agree to pay <strong class="underline-number">25%</strong> of the amount due
+                        as and for attorney's fees addition to the expenses and cost of litigation but; in no case, less that <strong>₱5,000.00.</strong> In case of litigation, Venue
+                        shall be vested in the competent court of the Province of Cebu City of Danao or any other component court as may be allowed by the Rules
+                        of Court at the sole option of the cooperative.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="disclosure-title-container mt-5">
+            <h3 class="title-disclosure">DISCLOSURE STATEMENT ON LOAN / CREDIT TRANSACTION</h3>
+            <h6 class="subtitle-disclosure">(As required under RA No. 3765, the "Truth Lending Act.")</h6>
+        </div>
+        <div class="disclosure-title">
+            <div class="row">
+                <div class="col-5 border-none">
+                    <div class="row no-spacing">
+                        <div class="col-6 border-none">
+                            <strong>1.</strong> LOAN GRANTED
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat loanAmount }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row no-spacing">
+                        <div class="col-10 border-none">
+                            <strong>2.</strong> FINANCE CHARGES:
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-10">a. Service Fee</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat service }}</div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-10">b. Loan Retention</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat loanRetention }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-10 border-none">
+                            <strong>2.</strong> NON FINANCIAL CHARGES:
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-10">a. Insurance Premium</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value"> {{ currencyFormat insurance }} </div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-10">b. Others(Loan Balances)</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">0.00</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-10">c. Interest</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat interest }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-10">TOTAL NON-FIN CHARGES:</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat finesCharge }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-5 border-none">
+                    <div class="row">
+                        <div class="col-10 border-none">
+                            (A) <span class="indent-10"><strong>4.</strong> TOTAL DEDUCTION FROM PROCEEDS</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-20">OF LOAN(#2 plus #3)</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat totalFee }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            <span class="indent-20"><strong>5.</strong> INTEREST RATE</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ intRate }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-10 border-none">(B)</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-10 border-none">
+                            <span class="indent-10"><strong>6. </strong> COLLATERAL</span>
+                            <p class="indent-10">This loan is wholly/partially secured by:</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3 indent-10 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">0.00</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                        <div class="col-3 border-none">Real Estate</div>
+                        <div class="col-4 border-none"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3 indent-10 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">0.00</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                        <div class="col-3 border-none">Chatel</div>
+                        <div class="col-4 border-none"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 border-none">
+                            (C) <span class="indent-10">NET LOAN PROCEEDS(#1 - #4)</span>
+                        </div>
+                        <div class="col-4 border-none">
+                            <div class="underline-promissory">
+                                <div class="value">{{ currencyFormat loanProceeds }}</div>
+                                <div class="line-disclosure"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="disclosure-authorization-title text-center mt-5">
+            <strong><u>AUTHORIZATION</u></strong>
+        </div>
+        <div class="promissory-note-body">
+            <div class="row">
+                <div class="col-10 border-none promissory-paragraph mt-5">
+                    <p>
+                        I hereby authorized my employer (Cebu Mitsumi, Inc.), to deduct from my salary wages/earnings and to remit the same to CEBU
+                        MITSUMI MULTI PURPOSE COOPERATIVE as payment of all part of my account duly incured by me or by representative during my
+                        membership in the cooperative. The check list duly submitted by CEMIMPCO to employeer shall be sufficient authority to deduct each
+                        amount from pay/earnings or any benefits in case separation from the company.
+                    </p>
+                    <p class=" mt-5">
+                        Furthermore, I hereby authorize CEMIMPCO to assign my loan obligation covered here in Promissory Note and including the
+                        securities covering above. 
+                    </p>
+                    <p class="mt-5">
+                        The proceeds of my/our loan covered by this promissory note to be released as follows:
+                    </p>
+                </div>
+            </div>        
+        </div>
+
+        <div class="loan-release-proceeds mb-2">
+            <div class="row border-none">
+                <div class="col-1 border-none"></div>
+                <div class="col-7 border-none">
+                    <table class="border-none no-spacing">
+                        <tr class="border-none no-spacing">
+                            <td colspan="2" class="border-none no-spacing">(  ) To  my PNB or LAND BANK account no. referred attached credit status.</td>
+                        </tr>
+                        <tr class="border-none no-spacing">
+                            <td class="border-none no-spacing">(  ) Via cheque of the cooperative</td>
+                            <td class="border-none no-spacing">(  ) To my savings account</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-3 border-none"></div>
+            </div>
+        </div>
+
+        <div class="footer mt-5">
+            <div class="row">
+                <div class="col-4 text-center border-none">
+                    <div class="underline-footer">
+                        <div class="value">{{ member.member_name }} / {{ memberNo }}</div>
+                        <div class="line"></div>
+                        <div class="value">Borrower / ID #</div>
+                        <div class="value">(Signature over printed name)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

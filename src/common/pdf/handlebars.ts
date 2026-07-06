@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import hbs from "handlebars";
+import dayjs from 'dayjs';
 
 let registered = false;
 
@@ -32,6 +33,30 @@ export function registerHbsHelpers() {
         minimumFractionDigits: 5,
         maximumFractionDigits: 5,
       }).format(roundFactor);
+    });
+
+    hbs.registerHelper('currencyFormat', function (amount) {
+      return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount)
+    });
+
+    hbs.registerHelper('formatGender', function (gender) {
+      return gender === 'M' ? 'Male' : 'Female'
+    });
+
+    hbs.registerHelper('splitNumber', function (number) {
+      const currency = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(number)
+      return currency.split('')
+    });
+
+    hbs.registerHelper("dateFormat", function (value: dayjs.ConfigType, format: string) {
+      return dayjs(value).format(format);
+    });
+
+    hbs.registerHelper('ifEquals', function (this: unknown, v1: unknown, v2: unknown, options: Handlebars.HelperOptions) {
+      return v1 === v2 ? options.fn(this) : options.inverse(this)
+    });
+    hbs.registerHelper('hasValue', function (val) {
+      return val !== null && val !== undefined && val !== '';
     });
   } catch (error) {
     logging.error(`Error handle bar registerHelpers: ${error}`);

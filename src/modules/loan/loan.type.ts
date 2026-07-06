@@ -55,3 +55,56 @@ export interface SaveLoanResult {
   success: boolean;
   message: string;
 }
+
+export interface LoanAppDetail {
+  loanType: string;
+  loanPurpose: string;
+  loanAmount: number;
+  interestRate: number;
+  term: number;
+  installmentType: string;
+  items: string;
+}
+
+export interface FinanceDetail {
+  sssPagibig: number | null;
+  healthInsurance: number | null;
+  cashAdvance: number | null;
+  netPay: number;
+  highestAvailment: number;
+  delinquencyHistory: string;
+  overtime: number | null;
+  cemimpcoDeduction: number | null;
+  rank: string;
+  basicSalary: number;
+}
+
+export interface PersonalDetail {
+  employeeName: string | null;
+  homeOwnership: string | null;
+  homeAddress: string | null;
+  position: string | null;
+  yearsInCompany: number;  
+  lineLeader: string | null;
+  companyTelephone: string | null;
+  spouse: string | null;
+  spouseAddress: string | null;
+  telephoneNumber: string | null;
+}
+
+
+export interface MemberRow {
+  member_no: string;
+  member_name: string;
+  member_type: string;
+  bdate: string | null;
+  addr_street1: string | null;
+  telno: string | null;
+  email: string | null;
+  gender: string | null;
+  civ_stat: string | null;
+  religion: string | null;
+  mbr_tin_no: string | null;
+  mbr_status: string | null;
+  chapter: string;
+}
