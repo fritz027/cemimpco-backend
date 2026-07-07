@@ -2,6 +2,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import fsp from "fs/promises";
 import type { Request } from "express";
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads", "loans");
@@ -38,6 +39,19 @@ function getExtFromMimetype(file: Express.Multer.File): ".jpg" | ".png" | ".pdf"
   return ".jpg";
 }
 
+// 🔑 delete any existing {memberNo}-ID.* regardless of extension
+async function deleteOldIdFiles(memberNo: string): Promise<void> {
+  const entries = await fsp.readdir(UPLOAD_DIR);
+  const oldFiles = entries.filter(
+    name =>
+      name.startsWith(`${memberNo}-ID`) &&
+      /\.(jpe?g|png|pdf)$/i.test(name)
+  );
+  await Promise.all(
+    oldFiles.map(name => fsp.unlink(path.join(UPLOAD_DIR, name)))
+  );
+}
+
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
 
@@ -47,7 +61,7 @@ const storage = multer.diskStorage({
       const raw = req.body.data;
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
 
-      const memberNo = normalizeMemberNo(data?.memberno || req.body.memberno);
+      const memberNo = normalizeMemberNo(data?.memberNo || req.body.memberNo);
 
       if (!memberNo) {
         return cb(new Error("memberno missing in request"), "");
@@ -58,7 +72,10 @@ const storage = multer.diskStorage({
       // two docs share the field name "documents", so suffix with a unique part
       // to avoid the second file overwriting the first
      
-      cb(null, `${memberNo}-ID${ext}`);
+      // delete old ID files first, THEN tell multer the new filename
+      deleteOldIdFiles(memberNo)
+        .then(() => cb(null, `${memberNo}-ID${ext}`))
+        .catch(() => cb(null, `${memberNo}-ID${ext}`));
     } catch {
       cb(new Error("Upload failed: ensure 'data' JSON is sent before the files"), "");
     }

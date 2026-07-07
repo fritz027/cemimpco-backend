@@ -12,7 +12,7 @@
   "main": "src/server.ts",
   "scripts": {
     "test": "jest --config jest.config.ts --coverage ",
-    "build": "rimraf build && tsc -p tsconfig.build.json",
+    "build": "rimraf build && tsc -p tsconfig.build.json && copyfiles \"uploads/**/*\" build",
     "dev": "nodemon --watch src --ext ts --exec \"ts-node --project tsconfig.json -r tsconfig-paths/register src/server.ts\""
   },
   "dependencies": {

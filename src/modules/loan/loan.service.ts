@@ -18,6 +18,8 @@ import { sendMail } from "../../common/services/email.service";
 import { EMAIL_USERNAME } from "../../config/config";
 import { generateLoanApplicationPdf } from "../../common/pdf/generateLoanApplicationPdf";
 import numberToWords from 'number-to-words';
+import { findIdImage } from "../../common/utils/idPictureFinder";
+import path from "path";
 
 export async function fetchLoanDetails(loanID: string): Promise<LoanDetail[]>  {
   try {
@@ -178,7 +180,7 @@ export async function saveLoanWithAttachment(email: string, memberNo: string, lo
 
     // --- save succeeded; now build data + send email (fire-and-forget) ---
     const templateData = await buildLoanTemplateData(loanID, memberNo, loanApp, personal, finance, applyDate, loanType);
-    console.log(templateData);
+    // console.log(templateData);
     sendLoanApplicationEmail(loanID, email, memberNo, loanApp, applyDate, loanType, templateData, files)
       .catch(err => logging.error(`Failed to send loan notification email for ${loanID}: ${err}`));
 
@@ -241,8 +243,8 @@ async function buildLoanTemplateData(
 
     const today = dayjs();
     const terms = data.term * 2;
-    const interestRate = loanType.int_rate / 100; 
-    const serviceFee = loanType.service_fee / 100;
+    const interestRate = loanType.int_rate; 
+    const serviceFee = loanType.service_fee;
     const interest = (data.loanAmount * interestRate) * data.term;
     const service = data.loanAmount * serviceFee;
     const totalLoanAmount = data.loanAmount + parseFloat(interest.toFixed(2)) + parseFloat(service.toFixed(2));
@@ -290,7 +292,6 @@ async function buildLoanTemplateData(
   }
 }
 
-
 async function sendLoanApplicationEmail(
   loanID: string,
   email: string,
@@ -301,22 +302,35 @@ async function sendLoanApplicationEmail(
   templateData: any,
   files: Express.Multer.File[]
 ) {
-  const pdfPath = await generateLoanApplicationPdf(loanID, templateData);
-
-  const idImage = files.find(f => f.mimetype.startsWith('image/'));
-
-  const attachments: any[] = [
-    { filename: `LoanApplication-${loanID}.pdf`, path: pdfPath, contentType: 'application/pdf' },
-  ];
-  if (idImage) {
-    attachments.push({ filename: idImage.originalname, path: idImage.path, contentType: idImage.mimetype });
-  }
-
-  const maillist = [EMAIL_USERNAME, email];
-  return sendMail({
-    to: maillist,
-    subject: `New Loan Application – ${loanID}`,
-    html: buildLoanApplicationHtml(loanID, memberNo, data, applyDate, loanType),
-    attachments,
-  });
+ try {
+   const pdfPath = await generateLoanApplicationPdf(loanID, templateData);
+ 
+   const idImage = files.find(f => f.mimetype.startsWith('image/'));
+ 
+   const attachments: any[] = [
+     { filename: `LoanApplication-${loanID}.pdf`, path: pdfPath, contentType: 'application/pdf' },
+   ];
+   
+   const idImagePath = await findIdImage(memberNo);
+   if (idImagePath) {
+     attachments.push({ 
+       filename: path.basename(idImagePath),
+       path: idImagePath,
+       // contentType can be omitted — nodemailer infers it from the extension
+     });
+   } else {
+     logging.warn(`ID image not found for memberNo: ${memberNo}`);
+   }
+ 
+   const maillist = [EMAIL_USERNAME, email];
+   return sendMail({
+     to: maillist,
+     subject: `New Loan Application – ${loanID}`,
+     html: buildLoanApplicationHtml(loanID, memberNo, data, applyDate, loanType),
+     attachments,
+   });
+ } catch (error) {
+    logging.error(`Error sending loan application email: ${error}`);
+    throw error;
+ }
 }

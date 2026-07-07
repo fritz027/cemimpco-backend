@@ -47,7 +47,7 @@ import {
   NewWebUser
 } from './auth.types'
 
-import { ACCESS_SECRET, BASEURL,DEVELOPMENT,MASTER_PASSWORD, REFRESH_SECRET } from '../../config/config';
+import { ACCESS_SECRET, BASEURL,DEVELOPMENT,MASTER_PASSWORD, REFRESH_SECRET, LOAN_APP_UC, LOAN_APP_USERS } from '../../config/config';
 
 import dayjs from 'dayjs';
 import { encrypt } from '../../common/utils/crypto';
@@ -121,6 +121,11 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
 
     const loginToken = generateMemberLoginToken({memberNo: WebUser.memberNo, email: WebUser.email});
     const refreshToken = generateRefreshToken({memberNo: WebUser.memberNo, email: WebUser.email});
+
+    const laSettings = {
+      laUnderConstruction: LOAN_APP_UC.toLowerCase() === "true",
+      laUsers: LOAN_APP_USERS.includes(memberNo)
+    }
         
     res.cookie("refresh_token", refreshToken,{
       httpOnly: true,
@@ -141,6 +146,7 @@ export const memberLogin = async (req: Request, res: Response, next: NextFunctio
       isSurvey,
       activeSurveys,
       accessToken: loginToken,
+      laSettings
     });
 
   } catch (error) {
