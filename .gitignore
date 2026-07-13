@@ -31,3 +31,7 @@ Thumbs.db
 .pub-cache/
 .pub/
 build/
+
+
+coverage/
+*.lcov
