@@ -11,7 +11,8 @@ import {
   LoanAppDetail,
   FinanceDetail,
   PersonalDetail,
-  MemberRow 
+  MemberRow,
+  DelinquencyHistory 
 } from "./loan.type";
 import { SetInstallmentType } from "../../common/utils/installmentType";
 import { sendMail } from "../../common/services/email.service";
@@ -87,6 +88,48 @@ export async function fetchMemberMobileNo(memberNo: string): Promise<string | nu
     return row?.[0]?.telno ?? null;
   } catch (error) {
     logging.error(`Error fetching member mobile number: ${error}`);
+    throw error;
+  }
+}
+
+export async function memberDelinquencyHistory(memberNo: string): Promise<DelinquencyHistory | null> {
+  try {
+    const sql = `
+      SELECT l.member_no,
+        COUNT(*) AS active_loans,
+        SUM(CASE WHEN
+            COALESCE((SELECT SUM(s.prin_due + s.int_due)
+                      FROM DBA.loan_sched s
+                      WHERE s.loan_id = l.loan_id
+                      AND s.op_id   = l.op_id
+                      AND s.due_date <= CURRENT DATE), 0)
+            - COALESCE((SELECT SUM(p.prin_payment + p.int_payment)
+                          FROM DBA.loan_payments p
+                          WHERE p.loan_id = l.loan_id
+                            AND p.op_id   = l.op_id), 0)
+            > 0.01
+          THEN 1 ELSE 0 END) AS delinquent_loans,
+            MAX(CASE WHEN
+                COALESCE((SELECT SUM(s.prin_due + s.int_due)
+                         FROM DBA.loan_sched s
+                        WHERE s.loan_id = l.loan_id
+                          AND s.op_id   = l.op_id
+                          AND s.due_date <= CURRENT DATE), 0)
+                - COALESCE((SELECT SUM(p.prin_payment + p.int_payment)
+                         FROM DBA.loan_payments p
+                        WHERE p.loan_id = l.loan_id
+                          AND p.op_id   = l.op_id), 0)
+                > 0.01
+              THEN 1 ELSE 0 END) AS is_delinquent
+        FROM DBA.loan l
+        WHERE l.member_no = ?
+        AND (l.loan_amt - COALESCE(l.payments, 0)) > 0
+        GROUP BY l.member_no;
+    `;
+    const row = await QueryStatement(sql, [memberNo]);
+    return row?.[0] ?? null;
+  } catch (error) {
+    logging.error(`Error fetching member delinquency history: ${error}`);
     throw error;
   }
 }
@@ -193,7 +236,9 @@ export async function saveLoanWithAttachment(email: string, memberNo: string, lo
 }
 
 
-async function getMemberDetails(memberNo: string): Promise<MemberRow | null> {
+
+
+export async function fetchmemberDetails(memberNo: string): Promise<MemberRow | null> {
   try {
     const sql = `SELECT * FROM member WHERE member_no = ?`;
     
@@ -236,7 +281,7 @@ async function buildLoanTemplateData(
   loanType: LoanType
 ) {
   try {
-    const memberDetails = await getMemberDetails(memberNo);
+    const memberDetails = await fetchmemberDetails(memberNo);
     if (!memberDetails) {
       throw new Error(`Member details not found for member_no: ${memberNo}`);
     }

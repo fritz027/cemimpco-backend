@@ -7,7 +7,9 @@ import {
   fetchLoanTypeDetails, 
   fetchMemberMobileNo, 
   fetchSharecapital, 
-  saveLoanWithAttachment 
+  saveLoanWithAttachment,
+  fetchmemberDetails,
+  memberDelinquencyHistory
 } from './loan.service';
 import { checkExpiredOtp, processOtp, verifyOtp } from '../../common/services/otp.services';
 import { EXT_CONTENT_TYPE } from './loan.constants';
@@ -373,6 +375,26 @@ export const getMemberIDPicture = async (req: Request, res: Response, next: Next
     fs.createReadStream(found).pipe(res);
   } catch (error) {
     logging.error(`Error fetching member ID picture: ${error}`);
+    return next(error);
+  }
+};
+
+export const getMemberProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: 'Unauthorized!' });
+    }
+    const profile = await fetchmemberDetails(memberNo);
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Member profile not found' });
+    }
+    
+    const delinquencyHistory = await memberDelinquencyHistory(memberNo);
+    
+    return res.status(200).json({ success: true, profile, delinquencyHistory });
+  } catch (error) {
+    logging.error(`Error fetching member profile: ${error}`);
     return next(error);
   }
 };

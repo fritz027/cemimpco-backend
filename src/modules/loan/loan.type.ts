@@ -99,6 +99,7 @@ export interface MemberRow {
   member_type: string;
   bdate: string | null;
   addr_street1: string | null;
+  addr_street2: string | null;
   telno: string | null;
   email: string | null;
   gender: string | null;
@@ -107,4 +108,12 @@ export interface MemberRow {
   mbr_tin_no: string | null;
   mbr_status: string | null;
   chapter: string;
+  spouse: string | null;
+}
+
+export interface DelinquencyHistory {
+  member_no: string;
+  active_loans: number;
+  delinquent_loans: number;
+  is_delinquent: boolean;
 }
