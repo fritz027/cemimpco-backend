@@ -95,36 +95,48 @@ export async function fetchMemberMobileNo(memberNo: string): Promise<string | nu
 export async function memberDelinquencyHistory(memberNo: string): Promise<DelinquencyHistory | null> {
   try {
     const sql = `
+      WITH co AS (
+          SELECT CASE
+                  WHEN DAY(CURRENT DATE) >= 10
+                    THEN DATEADD(day, 9, YMD(YEAR(CURRENT DATE), MONTH(CURRENT DATE), 1))
+                    ELSE DATEADD(day, 9, DATEADD(month, -1,
+                              YMD(YEAR(CURRENT DATE), MONTH(CURRENT DATE), 1)))
+                END AS cutoff_date
+      )
       SELECT l.member_no,
-        COUNT(*) AS active_loans,
-        SUM(CASE WHEN
-            COALESCE((SELECT SUM(s.prin_due + s.int_due)
-                      FROM DBA.loan_sched s
-                      WHERE s.loan_id = l.loan_id
-                      AND s.op_id   = l.op_id
-                      AND s.due_date <= CURRENT DATE), 0)
-            - COALESCE((SELECT SUM(p.prin_payment + p.int_payment)
-                          FROM DBA.loan_payments p
-                          WHERE p.loan_id = l.loan_id
-                            AND p.op_id   = l.op_id), 0)
-            > 0.01
-          THEN 1 ELSE 0 END) AS delinquent_loans,
-            MAX(CASE WHEN
-                COALESCE((SELECT SUM(s.prin_due + s.int_due)
-                         FROM DBA.loan_sched s
-                        WHERE s.loan_id = l.loan_id
-                          AND s.op_id   = l.op_id
-                          AND s.due_date <= CURRENT DATE), 0)
+            COUNT(*) AS active_loans,
+            SUM(CASE WHEN
+                  COALESCE((SELECT SUM(s.prin_due + s.int_due)
+                              FROM DBA.loan_sched s
+                              WHERE s.loan_id  = l.loan_id
+                                AND s.op_id    = l.op_id
+                                AND s.due_date <= co.cutoff_date), 0)
                 - COALESCE((SELECT SUM(p.prin_payment + p.int_payment)
-                         FROM DBA.loan_payments p
-                        WHERE p.loan_id = l.loan_id
-                          AND p.op_id   = l.op_id), 0)
-                > 0.01
-              THEN 1 ELSE 0 END) AS is_delinquent
+                              FROM DBA.loan_payments p
+                              WHERE p.loan_id = l.loan_id
+                                AND p.op_id   = l.op_id
+                                AND p.tran_date <= co.cutoff_date), 0)
+                  > 0.01
+                  THEN 1 ELSE 0 END) AS delinquent_loans,
+            MAX(CASE WHEN
+                  COALESCE((SELECT SUM(s.prin_due + s.int_due)
+                              FROM DBA.loan_sched s
+                              WHERE s.loan_id  = l.loan_id
+                                AND s.op_id    = l.op_id
+                                AND s.due_date <= co.cutoff_date), 0)
+                - COALESCE((SELECT SUM(p.prin_payment + p.int_payment)
+                              FROM DBA.loan_payments p
+                              WHERE p.loan_id = l.loan_id
+                                AND p.op_id   = l.op_id
+                                AND p.tran_date <= co.cutoff_date), 0)
+                  > 0.01
+                  THEN 1 ELSE 0 END) AS is_delinquent
         FROM DBA.loan l
-        WHERE l.member_no = ?
+      CROSS JOIN co
+      WHERE l.member_no = ?
         AND (l.loan_amt - COALESCE(l.payments, 0)) > 0
-        GROUP BY l.member_no;
+        AND COALESCE(l.loan_type, '') <> '162-126'
+      GROUP BY l.member_no;
     `;
     const row = await QueryStatement(sql, [memberNo]);
     return row?.[0] ?? null;
