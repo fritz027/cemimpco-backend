@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
 export function routeNotFound(req: Request, res: Response, next: NextFunction) {
-    const error = new Error('Not found');
-    logging.warning(error);
+    logging.warning(`404 Not Found - ${req.method} ${req.originalUrl} - IP: ${req.ip}`);
 
     res.status(404).json({
         error: {
-            message: error.message
+            message: 'Not found'
         }
     });
 }

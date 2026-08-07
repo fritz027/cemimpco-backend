@@ -684,7 +684,7 @@ export const creditLogin = async (req: Request, res: Response, next: NextFunctio
     return res.status(200).json({success: true, message: "Logged in" });
     
   } catch (error) {
-    logging.error(`Error login on credit: ${error}`);
+    logging.error(`Error login on credit: "Invalid credentials"`);
     next(error);
   }
 }

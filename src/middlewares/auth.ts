@@ -65,7 +65,7 @@ export const protectCredit = (req: Request, res: Response, next: NextFunction) =
         });
         return;
     }
-    console.log(req.session.credit);
+    // console.log(req.session.credit);
     req.session.touch();
 
     next();
