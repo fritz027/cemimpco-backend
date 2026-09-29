@@ -391,3 +391,14 @@ async function sendLoanApplicationEmail(
     throw error;
  }
 }
+
+export async function fetchHighestAvailment(memberNo: string, loanType: string): Promise<number> {
+  try {
+    const sql = `SELECT MAX(loan_amt) AS highest_availment FROM loan WHERE member_no = ? AND loan_type = ?`;
+    const row = await QueryStatement(sql, [memberNo, loanType]);
+    return row?.[0]?.highest_availment ?? 0;
+  } catch (error) {
+    logging.error(`Error fetching highest availment: ${error}`);
+    throw error;
+  }
+}

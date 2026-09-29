@@ -9,7 +9,8 @@ import {
   fetchSharecapital, 
   saveLoanWithAttachment,
   fetchmemberDetails,
-  memberDelinquencyHistory
+  memberDelinquencyHistory,
+  fetchHighestAvailment
 } from './loan.service';
 import { checkExpiredOtp, processOtp, verifyOtp } from '../../common/services/otp.services';
 import { EXT_CONTENT_TYPE } from './loan.constants';
@@ -395,6 +396,28 @@ export const getMemberProfile = async (req: Request, res: Response, next: NextFu
     return res.status(200).json({ success: true, profile, delinquencyHistory });
   } catch (error) {
     logging.error(`Error fetching member profile: ${error}`);
+    return next(error);
+  }
+};
+
+export const getHighestAvailment = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const memberNo = req.user?.memberNo;
+    if (!memberNo) {
+      return res.status(401).json({ success: false, message: 'Unauthorized!' });
+    }
+  
+    const loanType = req.params.loanType;
+    if (typeof loanType !== 'string' || !/^[A-Za-z0-9_-]{1,20}$/.test(loanType.trim())) {
+      return res.status(400).json({ success: false, message: 'Invalid request' });
+    }
+
+    const highestAvailment = await fetchHighestAvailment(memberNo, loanType.trim());
+
+    return res.status(200).json({ success: true, highestAvailment });
+  }
+  catch (error) {
+    logging.error(`Error fetching highest availment: ${error}`);
     return next(error);
   }
 };

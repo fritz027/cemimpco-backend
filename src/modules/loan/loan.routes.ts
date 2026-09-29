@@ -15,7 +15,8 @@ import {
   submitLoanApplication,
   verifyOTPMessage,
   getMemberIDPicture,
-  getMemberProfile
+  getMemberProfile,
+  getHighestAvailment
 } from "./loan.controller"
 
 const router = Router();
@@ -28,6 +29,7 @@ router.route('/loan-application-type').get(protect, asyncHandler(getLoanApplicat
 router.route('/share-capital').get(protect, asyncHandler(getShareCapital));
 router.route('/member-id-picture').get(protect, asyncHandler(getMemberIDPicture));
 router.route('/member-personal-information').get(protect, asyncHandler(getMemberProfile));
+router.route('/loan-types/:loanType/highest-availment').get(protect, asyncHandler(getHighestAvailment));
 
 // OTP routes
 router.route('/send-otp').post(protect, asyncHandler(sendOTPMessage));

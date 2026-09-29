@@ -26,7 +26,7 @@ export async function generateLoanApplicationPdf(loanID: string, templateData: a
 
     return pdfPath;
   } catch (error) {
-    logging.error(`Error generating loan application pdf`);
+    logging.error(`Error generating loan application pdf`, error);
     throw error;
   } finally {
     await browser.close();

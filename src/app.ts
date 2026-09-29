@@ -49,7 +49,6 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-console.log(DEVELOPMENT);
 
 // ✅ IIS doesn't forward X-Forwarded-Proto; site is HTTPS-only via IIS,
 // so force it in production so secure cookies work
