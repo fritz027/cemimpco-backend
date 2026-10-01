@@ -300,8 +300,8 @@ async function buildLoanTemplateData(
 
     const today = dayjs();
     const terms = data.term * 2;
-    const interestRate = loanType.int_rate; 
-    const serviceFee = loanType.service_fee;
+    const interestRate = loanType.int_rate / 100; 
+    const serviceFee = loanType.service_fee / 100;
     const interest = (data.loanAmount * interestRate) * data.term;
     const service = data.loanAmount * serviceFee;
     const totalLoanAmount = data.loanAmount + parseFloat(interest.toFixed(2)) + parseFloat(service.toFixed(2));
@@ -309,7 +309,7 @@ async function buildLoanTemplateData(
     const loanRetention = data.loanAmount * (1 / 100)
     const insurance = Number((Math.round(data.loanAmount! / 1000) * 0.55).toFixed(2))
     const loanAmountInWords = converNumberToWords(data.loanAmount);
-    const finesCharge =  Number(Math.round(interest +insurance).toFixed(2))
+    const finesCharge =  Number((interest + insurance).toFixed(2))
     const totalFee = Math.round(service + finesCharge)
     const loanProceeds = Math.round(data.loanAmount - finesCharge)
     const monthInWord = numberToWords.toWords(data.term);
